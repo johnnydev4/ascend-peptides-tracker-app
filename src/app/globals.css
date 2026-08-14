@@ -1,26 +1,78 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  /* Warm, calm palette inspired by minimalist AI-product interfaces */
+  --color-cream: #f6f3ec;
+  --color-cream-deep: #efeadf;
+  --color-surface: #fffdf9;
+  --color-ink: #211e19;
+  --color-ink-soft: #4a4538;
+  --color-muted: #8b8577;
+  --color-line: #e8e2d5;
+  --color-line-strong: #d8d0bf;
+  --color-tan: #b9a683;
+  --color-tan-soft: #e7ddc9;
+  --color-tan-faint: #f2ecdf;
+  --color-sage: #7d8b6f;
+  --color-sage-soft: #e4e8dd;
+  --color-terracotta: #b3593f;
+  --color-terracotta-soft: #f3e0d9;
+  --color-amber: #b98a3c;
+  --color-amber-soft: #f1e6d0;
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  --radius-card: 1.25rem;
+
+  --shadow-soft: 0 1px 2px rgb(33 30 25 / 0.03), 0 4px 16px rgb(33 30 25 / 0.04);
+  --shadow-raised: 0 2px 4px rgb(33 30 25 / 0.05), 0 12px 32px rgb(33 30 25 / 0.08);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-cream);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-tap-highlight-color: transparent;
+}
+
+::selection {
+  background: var(--color-tan-soft);
+}
+
+/* Subtle fade/slide for page content */
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-rise {
+  animation: rise-in 0.35s ease-out both;
+}
+
+/* Hide number input spinners for a cleaner look */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+/* Focus visibility */
+:focus-visible {
+  outline: 2px solid var(--color-tan);
+  outline-offset: 2px;
 }

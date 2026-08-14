@@ -1,69 +1,113 @@
-import Image from "next/image";
+import Link from "next/link";
+import {
+  CalendarDays,
+  Target,
+  Calculator,
+  BellRing,
+  ShieldCheck,
+  LineChart,
+} from "lucide-react";
+import { Wordmark } from "@/components/layout/Logo";
+import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
 
-export default function Home() {
+const FEATURES = [
+  {
+    icon: CalendarDays,
+    title: "Automatic calendar",
+    description:
+      "Your full dose schedule, generated from the protocol you configure.",
+  },
+  {
+    icon: Target,
+    title: "Site rotation",
+    description:
+      "A visual body map remembers where you injected and suggests where to go next.",
+  },
+  {
+    icon: Calculator,
+    title: "Reconstitution math",
+    description:
+      "BAC water calculations from your vial size and target concentration.",
+  },
+  {
+    icon: LineChart,
+    title: "Progress & history",
+    description:
+      "Adherence, completed doses, and side effects — all in one calm overview.",
+  },
+  {
+    icon: BellRing,
+    title: "Dose reminders",
+    description: "Optional notifications so a scheduled dose never slips by.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Private by design",
+    description:
+      "Your data is yours alone, protected with row-level security.",
+  },
+];
+
+export default function LandingPage() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
+    <div className="flex flex-1 flex-col">
+      <header className="flex items-center justify-between px-6 py-5 max-w-5xl mx-auto w-full">
+        <Wordmark />
+        <div className="flex items-center gap-2">
+          <Link href="/login">
+            <Button variant="ghost" size="sm">
+              Sign in
+            </Button>
+          </Link>
+          <Link href="/signup">
+            <Button size="sm">Get started</Button>
+          </Link>
+        </div>
+      </header>
+
+      <main className="flex-1 px-6 pb-20 max-w-5xl mx-auto w-full">
+        <section className="py-16 sm:py-24 text-center max-w-2xl mx-auto">
+          <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight text-ink leading-[1.1]">
+            A calm home for your peptide protocol.
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="mt-5 text-lg text-muted leading-relaxed">
+            Track doses, rotate injection sites, log side effects, and see your
+            progress — organized automatically around the schedule you set.
           </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+          <div className="mt-8 flex items-center justify-center gap-3">
+            <Link href="/signup">
+              <Button size="lg">Create your tracker</Button>
+            </Link>
+            <Link href="/login">
+              <Button variant="secondary" size="lg">
+                Sign in
+              </Button>
+            </Link>
+          </div>
+          <p className="mt-6 text-xs text-muted">
+            A tracking and organization tool — not medical advice.
+          </p>
+        </section>
+
+        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {FEATURES.map((feature) => (
+            <Card key={feature.title} className="p-6">
+              <div className="flex size-10 items-center justify-center rounded-xl bg-tan-faint text-tan mb-4">
+                <feature.icon className="size-5" strokeWidth={1.8} aria-hidden />
+              </div>
+              <h2 className="text-sm font-semibold text-ink">{feature.title}</h2>
+              <p className="mt-1.5 text-sm text-muted leading-relaxed">
+                {feature.description}
+              </p>
+            </Card>
+          ))}
+        </section>
       </main>
+
+      <footer className="border-t border-line py-6 text-center text-xs text-muted">
+        Peptide Tracker — organize an existing treatment protocol.
+      </footer>
     </div>
   );
 }
