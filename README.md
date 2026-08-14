@@ -8,6 +8,27 @@ records, reconstitution math, and progress tracking.
 > Severe or concerning symptoms should be discussed with a qualified
 > healthcare professional.
 
+## Try it instantly (demo mode, no Supabase)
+
+You can explore the entire app with **zero setup**:
+
+```bash
+npm install
+npm run dev
+```
+
+Open http://localhost:3000, click **Sign in** (credentials are pre-filled),
+and you're in with a sample treatment already three weeks along.
+
+Demo mode turns on automatically whenever real Supabase credentials are
+absent. It runs a mock auth session and stores a seeded dataset in your
+browser's `localStorage` — nothing leaves the machine, no account or server is
+involved. Every feature works (creating treatments, recording doses, rotating
+sites, logging side effects, the calculator). Use **Settings → Reset demo
+data** to start fresh. The moment you add real keys to `.env.local`
+(see below), the app switches to the live Supabase backend and demo mode
+disappears.
+
 ## Stack
 
 - **Next.js** (App Router) + React + TypeScript

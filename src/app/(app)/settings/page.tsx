@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { BellRing, LogOut, UserRound, Download } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { isDemoMode } from "@/lib/demo/config";
+import { resetDemoData } from "@/lib/demo/mockClient";
 import { useUser } from "@/hooks/useUser";
 import {
   DEFAULT_PREFERENCES,
@@ -178,6 +180,31 @@ export default function SettingsPage() {
             </p>
           </CardBody>
         </Card>
+
+        {isDemoMode() && (
+          <Card>
+            <CardHeader title="Demo mode" />
+            <CardBody className="space-y-3">
+              <p className="text-sm text-muted leading-relaxed">
+                You&apos;re exploring with sample data stored only in this
+                browser — no account or server involved. Add Supabase keys to
+                <code className="mx-1 rounded bg-cream-deep px-1 py-0.5 text-xs">
+                  .env.local
+                </code>
+                to switch to a real backend.
+              </p>
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  resetDemoData();
+                  window.location.reload();
+                }}
+              >
+                Reset demo data
+              </Button>
+            </CardBody>
+          </Card>
+        )}
 
         <Card>
           <CardBody className="pt-5">
