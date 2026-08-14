@@ -8,6 +8,7 @@ import {
   supportsNotifications,
 } from "@/lib/notifications/preferences";
 import { formatTime, formatAmount } from "@/lib/utils";
+import { useI18n } from "@/lib/i18n/context";
 
 /**
  * While the app is open, schedules a browser notification for the next dose
@@ -15,6 +16,7 @@ import { formatTime, formatAmount } from "@/lib/utils";
  * push server and is intentionally out of scope.)
  */
 export function DoseReminderScheduler() {
+  const { t } = useI18n();
   useEffect(() => {
     if (!supportsNotifications() || Notification.permission !== "granted") {
       return;
@@ -39,10 +41,10 @@ export function DoseReminderScheduler() {
         timer = setTimeout(() => {
           const amount =
             next.dose_amount ?? next.treatment?.dose_amount ?? undefined;
-          new Notification("Upcoming dose", {
-            body: `${next.treatment?.name ?? "Dose"}${
+          new Notification(t("notif.title"), {
+            body: `${next.treatment?.name ?? ""}${
               amount ? ` · ${formatAmount(amount)} ${next.dose_unit ?? next.treatment?.dose_unit ?? ""}` : ""
-            } at ${formatTime(next.scheduled_at)}`,
+            } ${t("notif.at")} ${formatTime(next.scheduled_at)}`,
             icon: "/icons/icon-192.png",
             tag: `dose-${next.id}`,
           });
@@ -57,7 +59,7 @@ export function DoseReminderScheduler() {
       cancelled = true;
       if (timer) clearTimeout(timer);
     };
-  }, []);
+  }, [t]);
 
   return null;
 }

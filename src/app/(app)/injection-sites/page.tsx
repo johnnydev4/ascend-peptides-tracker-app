@@ -18,15 +18,18 @@ import { Spinner } from "@/components/ui/Spinner";
 import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { InjectionSiteMap } from "@/components/features/InjectionSiteMap";
+import { useI18n } from "@/lib/i18n/context";
+import { siteName } from "@/lib/i18n/labels";
 
-const statusLabel = {
-  recent: { text: "Used recently", tone: "tan" as const },
-  used: { text: "Ready", tone: "sage" as const },
-  unused: { text: "Not used", tone: "neutral" as const },
+const statusMeta = {
+  recent: { key: "is.usedRecently", tone: "tan" as const },
+  used: { key: "is.ready", tone: "sage" as const },
+  unused: { key: "is.notUsed", tone: "neutral" as const },
 };
 
 export default function InjectionSitesPage() {
   const { user } = useUser();
+  const { t } = useI18n();
 
   const { data, loading, refresh } = useAsyncData(async () => {
     const supabase = createClient();
@@ -49,55 +52,53 @@ export default function InjectionSitesPage() {
 
   return (
     <div>
-      <PageHeader
-        title="Injection sites"
-        subtitle="Rotation history and which areas are available."
-      />
+      <PageHeader title={t("is.title")} subtitle={t("is.subtitle")} />
 
       <div className="grid gap-4 lg:grid-cols-[1fr_1.3fr]">
         <Card className="h-fit">
-          <CardHeader title="Body map" />
+          <CardHeader title={t("is.bodyMap")} />
           <CardBody>
             <InjectionSiteMap summaries={data} />
             {recommended && (
               <p className="mt-4 text-sm text-ink-soft bg-tan-faint border border-tan-soft rounded-xl px-3.5 py-2.5">
-                Next suggested:{" "}
-                <span className="font-semibold text-ink">
-                  {recommended.site.name}
-                </span>
+                {t("dash.nextSuggested", {
+                  name: siteName(t, recommended.site),
+                })}
               </p>
             )}
           </CardBody>
         </Card>
 
         <Card>
-          <CardHeader title="All areas" />
+          <CardHeader title={t("is.allAreas")} />
           <CardBody className="space-y-2">
             {data.length === 0 ? (
-              <EmptyState icon={Target} title="No sites configured" />
+              <EmptyState icon={Target} title={t("is.noSites")} />
             ) : (
               data.map((summary) => {
                 const status = rotationStatus(summary);
+                const label = siteName(t, summary.site);
                 return (
                   <div
                     key={summary.site.id}
                     className="flex items-center gap-3 rounded-2xl border border-line bg-surface px-4 py-3"
                   >
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-ink">
-                        {summary.site.name}
-                      </p>
+                      <p className="text-sm font-medium text-ink">{label}</p>
                       <p className="mt-0.5 text-xs text-muted">
-                        {summary.injectionCount} injection
-                        {summary.injectionCount === 1 ? "" : "s"}
                         {summary.lastUsedAt
-                          ? ` · last used ${formatDay(summary.lastUsedAt)}`
-                          : ""}
+                          ? t("is.injectionsLastUsed", {
+                              n: summary.injectionCount,
+                              day: formatDay(summary.lastUsedAt),
+                            })
+                          : t("is.injections", {
+                              n: summary.injectionCount,
+                            })}
                       </p>
                     </div>
                     {summary.site.enabled && (
-                      <Badge tone={statusLabel[status].tone}>
-                        {statusLabel[status].text}
+                      <Badge tone={statusMeta[status].tone}>
+                        {t(statusMeta[status].key)}
                       </Badge>
                     )}
                     <label className="flex items-center gap-2 text-xs text-muted cursor-pointer select-none">
@@ -108,9 +109,9 @@ export default function InjectionSitesPage() {
                           toggle(summary.site.id, e.target.checked)
                         }
                         className="size-4 accent-[var(--color-ink)] cursor-pointer"
-                        aria-label={`${summary.site.name} available`}
+                        aria-label={label}
                       />
-                      Available
+                      {t("is.available")}
                     </label>
                   </div>
                 );

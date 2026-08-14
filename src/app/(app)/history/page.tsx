@@ -15,8 +15,11 @@ import { Select, Input } from "@/components/ui/Field";
 import { Spinner } from "@/components/ui/Spinner";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Badge, statusTone } from "@/components/ui/Badge";
+import { useI18n } from "@/lib/i18n/context";
+import { statusLabel, siteName } from "@/lib/i18n/labels";
 
 export default function HistoryPage() {
+  const { t } = useI18n();
   const [treatmentId, setTreatmentId] = useState("");
   const [status, setStatus] = useState("");
   const [siteId, setSiteId] = useState("");
@@ -45,57 +48,54 @@ export default function HistoryPage() {
 
   return (
     <div>
-      <PageHeader
-        title="History"
-        subtitle="Every recorded dose, filterable by treatment, date, site, and status."
-      />
+      <PageHeader title={t("hist.title")} subtitle={t("hist.subtitle")} />
 
       <Card className="mb-4">
         <CardBody className="pt-5">
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
             <Select
-              label="Treatment"
+              label={t("hist.treatment")}
               value={treatmentId}
               onChange={(e) => setTreatmentId(e.target.value)}
             >
-              <option value="">All</option>
-              {meta?.treatments.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.name}
+              <option value="">{t("common.all")}</option>
+              {meta?.treatments.map((tr) => (
+                <option key={tr.id} value={tr.id}>
+                  {tr.name}
                 </option>
               ))}
             </Select>
             <Select
-              label="Status"
+              label={t("hist.status")}
               value={status}
               onChange={(e) => setStatus(e.target.value)}
             >
-              <option value="">All</option>
-              <option value="scheduled">Scheduled</option>
-              <option value="completed">Completed</option>
-              <option value="missed">Missed</option>
-              <option value="skipped">Skipped</option>
+              <option value="">{t("common.all")}</option>
+              <option value="scheduled">{t("statusOpt.scheduled")}</option>
+              <option value="completed">{t("statusOpt.completed")}</option>
+              <option value="missed">{t("statusOpt.missed")}</option>
+              <option value="skipped">{t("statusOpt.skipped")}</option>
             </Select>
             <Select
-              label="Injection site"
+              label={t("hist.injectionSite")}
               value={siteId}
               onChange={(e) => setSiteId(e.target.value)}
             >
-              <option value="">All</option>
+              <option value="">{t("common.all")}</option>
               {meta?.sites.map((s) => (
                 <option key={s.id} value={s.id}>
-                  {s.name}
+                  {siteName(t, s)}
                 </option>
               ))}
             </Select>
             <Input
-              label="From"
+              label={t("hist.from")}
               type="date"
               value={from}
               onChange={(e) => setFrom(e.target.value)}
             />
             <Input
-              label="To"
+              label={t("hist.to")}
               type="date"
               value={to}
               onChange={(e) => setTo(e.target.value)}
@@ -111,21 +111,21 @@ export default function HistoryPage() {
           ) : !doses || doses.length === 0 ? (
             <EmptyState
               icon={Clock}
-              title="No doses match"
-              description="Try widening the filters."
+              title={t("hist.noMatch")}
+              description={t("hist.noMatchDesc")}
             />
           ) : (
             <div className="overflow-x-auto -mx-5 sm:-mx-6 px-5 sm:px-6">
               <table className="w-full text-sm min-w-[640px]">
                 <thead>
                   <tr className="text-left text-xs text-muted border-b border-line">
-                    <th className="py-2.5 pr-4 font-medium">Treatment</th>
-                    <th className="py-2.5 pr-4 font-medium">Scheduled</th>
-                    <th className="py-2.5 pr-4 font-medium">Administered</th>
-                    <th className="py-2.5 pr-4 font-medium">Dose</th>
-                    <th className="py-2.5 pr-4 font-medium">Site</th>
-                    <th className="py-2.5 pr-4 font-medium">Status</th>
-                    <th className="py-2.5 font-medium">Notes</th>
+                    <th className="py-2.5 pr-4 font-medium">{t("hist.treatment")}</th>
+                    <th className="py-2.5 pr-4 font-medium">{t("hist.scheduled")}</th>
+                    <th className="py-2.5 pr-4 font-medium">{t("hist.administered")}</th>
+                    <th className="py-2.5 pr-4 font-medium">{t("hist.dose")}</th>
+                    <th className="py-2.5 pr-4 font-medium">{t("hist.site")}</th>
+                    <th className="py-2.5 pr-4 font-medium">{t("hist.status")}</th>
+                    <th className="py-2.5 font-medium">{t("hist.notes")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -151,11 +151,13 @@ export default function HistoryPage() {
                           : "—"}
                       </td>
                       <td className="py-3 pr-4 text-muted">
-                        {dose.injection_site?.name ?? "—"}
+                        {dose.injection_site
+                          ? siteName(t, dose.injection_site)
+                          : "—"}
                       </td>
                       <td className="py-3 pr-4">
                         <Badge tone={statusTone(dose.status)}>
-                          {dose.status}
+                          {statusLabel(t, dose.status)}
                         </Badge>
                       </td>
                       <td className="py-3 text-muted max-w-48 truncate">

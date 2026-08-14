@@ -35,7 +35,7 @@ const admin = createClient(url, serviceKey, {
 });
 
 // 1. Create the user, already email-confirmed.
-const { data, error } = await admin.auth.admin.createUser({
+const { error } = await admin.auth.admin.createUser({
   email,
   password,
   email_confirm: true,

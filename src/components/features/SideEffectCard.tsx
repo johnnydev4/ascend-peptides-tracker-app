@@ -4,6 +4,8 @@ import { Trash2 } from "lucide-react";
 import type { SideEffectWithTreatment } from "@/lib/types";
 import { formatDateTime, cn } from "@/lib/utils";
 import { Badge, statusTone } from "@/components/ui/Badge";
+import { useI18n } from "@/lib/i18n/context";
+import { severityLabel } from "@/lib/i18n/labels";
 
 export function SideEffectCard({
   sideEffect,
@@ -14,6 +16,8 @@ export function SideEffectCard({
   onDelete?: (id: string) => void;
   className?: string;
 }) {
+  const { t } = useI18n();
+
   return (
     <div
       className={cn(
@@ -25,7 +29,7 @@ export function SideEffectCard({
         <div className="flex items-center gap-2">
           <p className="text-sm font-medium text-ink">{sideEffect.name}</p>
           <Badge tone={statusTone(sideEffect.severity)}>
-            {sideEffect.severity}
+            {severityLabel(t, sideEffect.severity)}
           </Badge>
         </div>
         <p className="mt-0.5 text-xs text-muted">
@@ -43,7 +47,7 @@ export function SideEffectCard({
         <button
           type="button"
           onClick={() => onDelete(sideEffect.id)}
-          aria-label={`Delete ${sideEffect.name} record`}
+          aria-label={t("se.deleteRecordAria", { name: sideEffect.name })}
           className="rounded-lg p-2 text-muted hover:bg-terracotta-soft hover:text-terracotta transition-colors"
         >
           <Trash2 className="size-4" />

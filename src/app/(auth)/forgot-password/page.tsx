@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { MailCheck } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { useI18n } from "@/lib/i18n/context";
 import {
   forgotPasswordSchema,
   type ForgotPasswordInput,
@@ -14,6 +15,7 @@ import { Input } from "@/components/ui/Field";
 import { Button } from "@/components/ui/Button";
 
 export default function ForgotPasswordPage() {
+  const { t } = useI18n();
   const [sent, setSent] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
 
@@ -44,12 +46,14 @@ export default function ForgotPasswordPage() {
         <div className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-sage-soft text-sage mb-4">
           <MailCheck className="size-5" aria-hidden />
         </div>
-        <h1 className="text-xl font-semibold text-ink">Check your inbox</h1>
+        <h1 className="text-xl font-semibold text-ink">
+          {t("common.checkInbox")}
+        </h1>
         <p className="mt-2 text-sm text-muted leading-relaxed">
-          If an account exists for that email, a reset link is on its way.
+          {t("auth.resetSentBody")}
         </p>
         <Link href="/login" className="mt-6 inline-block">
-          <Button variant="secondary">Back to sign in</Button>
+          <Button variant="secondary">{t("common.backToSignIn")}</Button>
         </Link>
       </div>
     );
@@ -57,10 +61,8 @@ export default function ForgotPasswordPage() {
 
   return (
     <>
-      <h1 className="text-xl font-semibold text-ink">Reset your password</h1>
-      <p className="mt-1 text-sm text-muted">
-        Enter your email and we&apos;ll send a reset link.
-      </p>
+      <h1 className="text-xl font-semibold text-ink">{t("auth.resetTitle")}</h1>
+      <p className="mt-1 text-sm text-muted">{t("auth.resetSubtitle")}</p>
 
       <form
         onSubmit={handleSubmit(onSubmit)}
@@ -68,7 +70,7 @@ export default function ForgotPasswordPage() {
         noValidate
       >
         <Input
-          label="Email"
+          label={t("auth.email")}
           type="email"
           autoComplete="email"
           placeholder="you@example.com"
@@ -83,7 +85,7 @@ export default function ForgotPasswordPage() {
         )}
 
         <Button type="submit" className="w-full" loading={isSubmitting}>
-          Send reset link
+          {t("auth.sendResetLink")}
         </Button>
       </form>
 
@@ -92,7 +94,7 @@ export default function ForgotPasswordPage() {
           href="/login"
           className="text-muted hover:text-ink transition-colors"
         >
-          Back to sign in
+          {t("common.backToSignIn")}
         </Link>
       </p>
     </>

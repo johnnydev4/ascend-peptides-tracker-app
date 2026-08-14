@@ -7,9 +7,11 @@ import type { TreatmentInput } from "@/lib/validation/treatment";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Card, CardBody } from "@/components/ui/Card";
 import { TreatmentForm } from "@/components/features/TreatmentForm";
+import { useI18n } from "@/lib/i18n/context";
 
 export default function NewTreatmentPage() {
   const router = useRouter();
+  const { t } = useI18n();
 
   const onSubmit = async (values: TreatmentInput) => {
     const supabase = createClient();
@@ -23,13 +25,13 @@ export default function NewTreatmentPage() {
 
   return (
     <div className="max-w-xl">
-      <PageHeader
-        title="New treatment"
-        subtitle="Enter your protocol — the dose calendar is generated from these parameters."
-      />
+      <PageHeader title={t("tr.new")} subtitle={t("tr.newSubtitle")} />
       <Card>
         <CardBody className="pt-5">
-          <TreatmentForm onSubmit={onSubmit} submitLabel="Create treatment" />
+          <TreatmentForm
+            onSubmit={onSubmit}
+            submitLabel={t("tr.createTreatment")}
+          />
         </CardBody>
       </Card>
     </div>

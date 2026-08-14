@@ -37,6 +37,7 @@ disappears.
 - **React Hook Form + Zod** — forms and validation
 - **Lucide** icons, **date-fns** dates
 - **PWA** — manifest, service worker, offline shell, installable
+- **i18n** — Spanish (default) and English, switchable in Settings
 
 ## Features
 

@@ -15,6 +15,8 @@ import {
 import { DOSE_UNITS } from "@/lib/validation/treatment";
 import type { DoseWithRelations, SiteUsageSummary } from "@/lib/types";
 import { formatAmount } from "@/lib/utils";
+import { useI18n } from "@/lib/i18n/context";
+import { siteName } from "@/lib/i18n/labels";
 import { Dialog } from "@/components/ui/Dialog";
 import { Button } from "@/components/ui/Button";
 import { Input, Select, Textarea } from "@/components/ui/Field";
@@ -35,6 +37,7 @@ export function RecordDoseDialog({
   onClose: () => void;
   onRecorded: () => void;
 }) {
+  const { t } = useI18n();
   const recommended = recommendNextSite(siteSummaries);
   const [serverError, setServerError] = useState<string | null>(null);
 
@@ -73,7 +76,7 @@ export function RecordDoseDialog({
       onClose();
     } catch (error) {
       setServerError(
-        error instanceof Error ? error.message : "Something went wrong."
+        error instanceof Error ? error.message : t("common.somethingWrong")
       );
     }
   };
@@ -82,19 +85,19 @@ export function RecordDoseDialog({
     <Dialog
       open={open}
       onClose={onClose}
-      title={`Record dose — ${dose.treatment?.name ?? "Treatment"}`}
+      title={t("rdd.title", { name: dose.treatment?.name ?? t("hist.treatment") })}
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
         <div className="grid grid-cols-2 gap-3">
           <Input
-            label="Amount"
+            label={t("rdd.amount")}
             type="number"
             step="any"
             inputMode="decimal"
             error={errors.doseAmount?.message}
             {...register("doseAmount")}
           />
-          <Select label="Unit" {...register("doseUnit")}>
+          <Select label={t("rdd.unit")} {...register("doseUnit")}>
             {DOSE_UNITS.map((unit) => (
               <option key={unit} value={unit}>
                 {unit}
@@ -104,7 +107,7 @@ export function RecordDoseDialog({
         </div>
 
         <Input
-          label="Administered at"
+          label={t("rdd.administeredAt")}
           type="datetime-local"
           error={errors.administeredAt?.message}
           {...register("administeredAt")}
@@ -112,10 +115,10 @@ export function RecordDoseDialog({
 
         <div>
           <p className="text-[13px] font-medium text-ink-soft mb-2">
-            Injection site
+            {t("rdd.injectionSite")}
             {recommended && (
               <span className="ml-2 font-normal text-muted">
-                Suggested: {recommended.site.name}
+                {t("rdd.suggested", { name: siteName(t, recommended.site) })}
               </span>
             )}
           </p>
@@ -130,14 +133,14 @@ export function RecordDoseDialog({
           />
           <div className="mt-3">
             <Select
-              aria-label="Injection site"
+              aria-label={t("rdd.injectionSite")}
               value={selectedSiteId ?? ""}
               onChange={(e) => setValue("injectionSiteId", e.target.value)}
             >
-              <option value="">No site recorded</option>
+              <option value="">{t("rdd.noSite")}</option>
               {enabledSites.map((s) => (
                 <option key={s.site.id} value={s.site.id}>
-                  {s.site.name}
+                  {siteName(t, s.site)}
                   {s.injectionCount > 0 ? ` · ${s.injectionCount}×` : ""}
                 </option>
               ))}
@@ -146,8 +149,8 @@ export function RecordDoseDialog({
         </div>
 
         <Textarea
-          label="Notes (optional)"
-          placeholder="Anything worth remembering about this dose…"
+          label={`${t("form.notes")} ${t("common.optional")}`}
+          placeholder={t("rdd.notesPh")}
           error={errors.notes?.message}
           {...register("notes")}
         />
@@ -160,10 +163,10 @@ export function RecordDoseDialog({
 
         <div className="flex gap-3 justify-end pt-1">
           <Button type="button" variant="secondary" onClick={onClose}>
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button type="submit" loading={isSubmitting}>
-            Mark as completed
+            {t("rdd.markCompleted")}
             {dose.dose_amount ? ` · ${formatAmount(dose.dose_amount)} ${dose.dose_unit}` : ""}
           </Button>
         </div>

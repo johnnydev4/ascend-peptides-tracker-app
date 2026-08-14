@@ -16,9 +16,11 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { DoseCard } from "@/components/features/DoseCard";
 import { RecordDoseDialog } from "@/components/features/RecordDoseDialog";
 import { EditDoseDialog } from "@/components/features/EditDoseDialog";
+import { useI18n } from "@/lib/i18n/context";
 
 export default function DosesPage() {
   const { user } = useUser();
+  const { t } = useI18n();
   const [doseToRecord, setDoseToRecord] = useState<DoseWithRelations | null>(null);
   const [doseToEdit, setDoseToEdit] = useState<DoseWithRelations | null>(null);
 
@@ -46,14 +48,11 @@ export default function DosesPage() {
 
   return (
     <div>
-      <PageHeader
-        title="Doses"
-        subtitle="What's due now and what's coming this week."
-      />
+      <PageHeader title={t("dose.title")} subtitle={t("dose.subtitle")} />
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
-          <CardHeader title="Due now" />
+          <CardHeader title={t("dose.dueNow")} />
           <CardBody className="space-y-2.5">
             {data.due.length > 0 ? (
               data.due.map((dose) => (
@@ -67,8 +66,8 @@ export default function DosesPage() {
             ) : (
               <EmptyState
                 icon={Pill}
-                title="All caught up"
-                description="No doses waiting to be recorded."
+                title={t("dose.allCaughtUp")}
+                description={t("dose.allCaughtUpDesc")}
                 className="py-8"
               />
             )}
@@ -76,7 +75,7 @@ export default function DosesPage() {
         </Card>
 
         <Card>
-          <CardHeader title="Next 7 days" />
+          <CardHeader title={t("dose.next7")} />
           <CardBody className="space-y-2.5">
             {data.upcoming.length > 0 ? (
               data.upcoming.map((dose) => (
@@ -90,8 +89,8 @@ export default function DosesPage() {
             ) : (
               <EmptyState
                 icon={Pill}
-                title="Nothing scheduled"
-                description="Doses appear here once a treatment is active."
+                title={t("dash.nothingScheduled")}
+                description={t("dose.nothingScheduledDesc")}
                 className="py-8"
               />
             )}

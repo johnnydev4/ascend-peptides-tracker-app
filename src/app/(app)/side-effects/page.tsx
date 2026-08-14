@@ -18,9 +18,12 @@ import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { Badge, statusTone } from "@/components/ui/Badge";
 import { SideEffectDialog } from "@/components/features/SideEffectDialog";
 import { SideEffectCard } from "@/components/features/SideEffectCard";
+import { useI18n } from "@/lib/i18n/context";
+import { severityLabel } from "@/lib/i18n/labels";
 
 export default function SideEffectsPage() {
   const { user } = useUser();
+  const { t } = useI18n();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [toDelete, setToDelete] = useState<string | null>(null);
 
@@ -63,26 +66,23 @@ export default function SideEffectsPage() {
   return (
     <div>
       <PageHeader
-        title="Side effects"
-        subtitle="Everything you've recorded, in relation to your doses."
+        title={t("se.title")}
+        subtitle={t("se.subtitle")}
         action={
           <Button onClick={() => setDialogOpen(true)}>
-            <Plus className="size-4" /> Record side effect
+            <Plus className="size-4" /> {t("se.record")}
           </Button>
         }
       />
 
       <div className="mb-4 flex items-start gap-2.5 rounded-2xl border border-amber-soft bg-amber-soft/50 px-4 py-3 text-sm text-ink-soft">
         <AlertTriangle className="size-4 mt-0.5 shrink-0 text-amber" />
-        <p>
-          This is a personal record, not a diagnosis. Severe or concerning
-          symptoms should be discussed with a qualified healthcare professional.
-        </p>
+        <p>{t("se.disclaimer")}</p>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
-          <CardHeader title="All records" />
+          <CardHeader title={t("se.allRecords")} />
           <CardBody className="space-y-2.5">
             {data.sideEffects.length > 0 ? (
               data.sideEffects.map((se) => (
@@ -95,8 +95,8 @@ export default function SideEffectsPage() {
             ) : (
               <EmptyState
                 icon={Sparkles}
-                title="No side effects recorded"
-                description="Records you add appear here with their severity and timing."
+                title={t("dash.noSideEffects")}
+                description={t("se.emptyDesc")}
                 className="py-8"
               />
             )}
@@ -104,12 +104,12 @@ export default function SideEffectsPage() {
         </Card>
 
         <Card className="h-fit">
-          <CardHeader title="Timeline vs. doses" />
+          <CardHeader title={t("se.timeline")} />
           <CardBody>
             {timeline.length === 0 ? (
               <EmptyState
                 icon={Sparkles}
-                title="No timeline yet"
+                title={t("se.noTimeline")}
                 className="py-8"
               />
             ) : (
@@ -126,8 +126,12 @@ export default function SideEffectsPage() {
                     <div className="mt-1.5 space-y-1.5">
                       {day.doses.map((dose) => (
                         <p key={dose.id} className="text-xs text-muted">
-                          💉 {dose.treatment?.name} dose at{" "}
-                          {formatTime(dose.administered_at ?? dose.scheduled_at)}
+                          {t("se.doseAt", {
+                            name: dose.treatment?.name ?? "",
+                            time: formatTime(
+                              dose.administered_at ?? dose.scheduled_at
+                            ),
+                          })}
                         </p>
                       ))}
                       {day.effects.map((se) => (
@@ -137,7 +141,7 @@ export default function SideEffectsPage() {
                         >
                           {se.name}
                           <Badge tone={statusTone(se.severity)}>
-                            {se.severity}
+                            {severityLabel(t, se.severity)}
                           </Badge>
                         </div>
                       ))}
@@ -169,9 +173,9 @@ export default function SideEffectsPage() {
           await deleteSideEffect(supabase, toDelete);
           await refresh();
         }}
-        title="Delete record?"
-        message="This removes the side effect record permanently."
-        confirmLabel="Delete"
+        title={t("se.deleteTitle")}
+        message={t("se.deleteMessage")}
+        confirmLabel={t("common.delete")}
         destructive
       />
     </div>

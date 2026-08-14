@@ -15,11 +15,13 @@ import { Spinner } from "@/components/ui/Spinner";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { DoseCard } from "@/components/features/DoseCard";
 import { RecordDoseDialog } from "@/components/features/RecordDoseDialog";
+import { useI18n } from "@/lib/i18n/context";
 
 /** Mobile quick-record: the next doses ready to be marked as completed. */
 export default function RecordPage() {
   const router = useRouter();
   const { user } = useUser();
+  const { t } = useI18n();
   const [doseToRecord, setDoseToRecord] = useState<DoseWithRelations | null>(null);
   const [recorded, setRecorded] = useState(false);
 
@@ -39,14 +41,11 @@ export default function RecordPage() {
 
   return (
     <div className="max-w-xl">
-      <PageHeader
-        title="Record a dose"
-        subtitle="Pick the scheduled dose you just administered."
-      />
+      <PageHeader title={t("rec.title")} subtitle={t("rec.subtitle")} />
 
       {recorded && (
         <div className="mb-4 flex items-center gap-2.5 rounded-2xl border border-sage-soft bg-sage-soft/60 px-4 py-3 text-sm text-sage font-medium">
-          <CheckCircle2 className="size-4" /> Dose recorded.
+          <CheckCircle2 className="size-4" /> {t("rec.recorded")}
         </div>
       )}
 
@@ -59,8 +58,8 @@ export default function RecordPage() {
           ) : (
             <EmptyState
               icon={Pill}
-              title="Nothing to record"
-              description="There are no scheduled doses. Create or resume a treatment first."
+              title={t("rec.nothingTitle")}
+              description={t("rec.nothingDesc")}
             />
           )}
         </CardBody>

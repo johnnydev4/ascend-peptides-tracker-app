@@ -25,6 +25,8 @@ import { Dialog } from "@/components/ui/Dialog";
 import { StatCard } from "@/components/ui/StatCard";
 import { TreatmentForm } from "@/components/features/TreatmentForm";
 import { DoseCard } from "@/components/features/DoseCard";
+import { useI18n } from "@/lib/i18n/context";
+import { treatmentStatusLabel } from "@/lib/i18n/labels";
 
 export default function TreatmentDetailPage({
   params,
@@ -33,6 +35,7 @@ export default function TreatmentDetailPage({
 }) {
   const { id } = use(params);
   const router = useRouter();
+  const { t } = useI18n();
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
 
@@ -84,23 +87,28 @@ export default function TreatmentDetailPage({
     <div>
       <PageHeader
         title={treatment.name}
-        subtitle={`${formatAmount(treatment.dose_amount)} ${treatment.dose_unit} at ${formatClockTime(
-          treatment.scheduled_time
-        )} · started ${formatFullDate(treatment.start_date)}`}
+        subtitle={t("trd.summary", {
+          amount: formatAmount(treatment.dose_amount),
+          unit: treatment.dose_unit,
+          time: formatClockTime(treatment.scheduled_time),
+          date: formatFullDate(treatment.start_date),
+        })}
         action={
           <div className="flex items-center gap-2">
-            <Badge tone={statusTone(treatment.status)}>{treatment.status}</Badge>
+            <Badge tone={statusTone(treatment.status)}>
+              {treatmentStatusLabel(t, treatment.status)}
+            </Badge>
             <Button variant="secondary" size="sm" onClick={() => setEditOpen(true)}>
-              <Pencil className="size-3.5" /> Edit
+              <Pencil className="size-3.5" /> {t("common.edit")}
             </Button>
             <Button variant="secondary" size="sm" onClick={togglePause}>
               {treatment.status === "paused" ? (
                 <>
-                  <Play className="size-3.5" /> Resume
+                  <Play className="size-3.5" /> {t("trd.resume")}
                 </>
               ) : (
                 <>
-                  <Pause className="size-3.5" /> Pause
+                  <Pause className="size-3.5" /> {t("trd.pause")}
                 </>
               )}
             </Button>
@@ -110,27 +118,31 @@ export default function TreatmentDetailPage({
               onClick={() => setDeleteOpen(true)}
               className="text-terracotta hover:bg-terracotta-soft"
             >
-              <Trash2 className="size-3.5" /> Delete
+              <Trash2 className="size-3.5" /> {t("common.delete")}
             </Button>
           </div>
         }
       />
 
       <div className="grid gap-4 sm:grid-cols-3 mb-4">
-        <StatCard label="Completed" value={completed} detail={`of ${doses.length} doses`} />
-        <StatCard label="Missed" value={missed} />
-        <StatCard label="Progress" value={`${Math.round(pct)}%`} />
+        <StatCard
+          label={t("trd.completedStat")}
+          value={completed}
+          detail={t("trd.ofDoses", { total: doses.length })}
+        />
+        <StatCard label={t("trd.missedStat")} value={missed} />
+        <StatCard label={t("trd.progressStat")} value={`${Math.round(pct)}%`} />
       </div>
 
       <Card className="mb-4">
         <CardBody className="pt-5">
-          <ProgressBar value={pct} label={`${treatment.name} progress`} />
+          <ProgressBar value={pct} label={treatment.name} />
         </CardBody>
       </Card>
 
       {treatment.notes && (
         <Card className="mb-4">
-          <CardHeader title="Notes" />
+          <CardHeader title={t("trd.notes")} />
           <CardBody>
             <p className="text-sm text-ink-soft whitespace-pre-wrap leading-relaxed">
               {treatment.notes}
@@ -140,13 +152,13 @@ export default function TreatmentDetailPage({
       )}
 
       <Card>
-        <CardHeader title="Recent doses" />
+        <CardHeader title={t("trd.recentDoses")} />
         <CardBody className="space-y-2.5">
           {recent.map((dose) => (
             <DoseCard key={dose.id} dose={dose} />
           ))}
           {doses.length === 0 && (
-            <p className="text-sm text-muted py-4">No doses generated.</p>
+            <p className="text-sm text-muted py-4">{t("trd.noDoses")}</p>
           )}
         </CardBody>
       </Card>
@@ -154,17 +166,16 @@ export default function TreatmentDetailPage({
       <Dialog
         open={editOpen}
         onClose={() => setEditOpen(false)}
-        title="Edit treatment"
+        title={t("trd.editTreatment")}
         className="sm:max-w-xl"
       >
         <p className="mb-4 text-xs text-muted leading-relaxed">
-          Changing the schedule regenerates upcoming doses. Completed and past
-          doses are never modified.
+          {t("trd.editHint")}
         </p>
         <TreatmentForm
           treatment={treatment}
           onSubmit={onEdit}
-          submitLabel="Save changes"
+          submitLabel={t("common.saveChanges")}
         />
       </Dialog>
 
@@ -172,9 +183,9 @@ export default function TreatmentDetailPage({
         open={deleteOpen}
         onClose={() => setDeleteOpen(false)}
         onConfirm={onDelete}
-        title="Delete treatment?"
-        message={`This permanently removes “${treatment.name}” and its entire dose history. This cannot be undone.`}
-        confirmLabel="Delete treatment"
+        title={t("trd.deleteTitle")}
+        message={t("trd.deleteMessage", { name: treatment.name })}
+        confirmLabel={t("trd.deleteConfirm")}
         destructive
       />
     </div>

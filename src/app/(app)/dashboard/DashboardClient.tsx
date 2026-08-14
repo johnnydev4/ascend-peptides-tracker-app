@@ -42,13 +42,8 @@ import { SideEffectDialog } from "@/components/features/SideEffectDialog";
 import { SideEffectCard } from "@/components/features/SideEffectCard";
 import { DoseCard } from "@/components/features/DoseCard";
 import { InjectionSiteMap } from "@/components/features/InjectionSiteMap";
-
-function greeting(): string {
-  const hour = new Date().getHours();
-  if (hour < 12) return "Good morning";
-  if (hour < 18) return "Good afternoon";
-  return "Good evening";
-}
+import { useI18n } from "@/lib/i18n/context";
+import { siteName } from "@/lib/i18n/labels";
 
 export function DashboardClient({
   userId,
@@ -57,6 +52,13 @@ export function DashboardClient({
   userId: string;
   displayName: string;
 }) {
+  const { t } = useI18n();
+  const greeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return t("dash.morning");
+    if (hour < 18) return t("dash.afternoon");
+    return t("dash.evening");
+  };
   const [recordOpen, setRecordOpen] = useState(false);
   const [sideEffectOpen, setSideEffectOpen] = useState(false);
   const [doseToRecord, setDoseToRecord] = useState<DoseWithRelations | null>(
@@ -138,12 +140,12 @@ export function DashboardClient({
         <Card>
           <EmptyState
             icon={Syringe}
-            title="No treatments yet"
-            description="Create your first treatment protocol and your dose calendar will be generated automatically."
+            title={t("dash.noTreatmentsTitle")}
+            description={t("dash.noTreatmentsDesc")}
             action={
               <Link href="/treatments/new">
                 <Button>
-                  <Plus className="size-4" /> Create treatment
+                  <Plus className="size-4" /> {t("dash.createTreatment")}
                 </Button>
               </Link>
             }
@@ -162,7 +164,7 @@ export function DashboardClient({
       <div className="grid gap-4 lg:grid-cols-3">
         {/* Next dose */}
         <Card className="lg:col-span-2">
-          <CardHeader title="Next dose" />
+          <CardHeader title={t("dash.nextDose")} />
           <CardBody>
             {data.nextDose ? (
               <div className="flex flex-wrap items-center justify-between gap-4">
@@ -188,17 +190,17 @@ export function DashboardClient({
                     setRecordOpen(true);
                   }}
                 >
-                  Mark as completed
+                  {t("dash.markCompleted")}
                 </Button>
               </div>
             ) : (
               <p className="text-sm text-muted py-2">
-                No upcoming doses scheduled.{" "}
+                {t("dash.noUpcoming")}{" "}
                 <Link
                   href="/treatments"
                   className="text-ink font-medium hover:underline underline-offset-4"
                 >
-                  Review your treatments
+                  {t("dash.reviewTreatments")}
                 </Link>
               </p>
             )}
@@ -207,7 +209,7 @@ export function DashboardClient({
 
         {/* Treatment progress */}
         <Card>
-          <CardHeader title="Treatment progress" />
+          <CardHeader title={t("dash.treatmentProgress")} />
           <CardBody>
             {activeTreatment ? (
               <>
@@ -217,8 +219,10 @@ export function DashboardClient({
                   </p>
                   {currentWeek && activeTreatment.duration_weeks ? (
                     <p className="text-xs text-muted">
-                      Week {Math.max(1, currentWeek)} of{" "}
-                      {activeTreatment.duration_weeks}
+                      {t("dash.weekOf", {
+                        n: Math.max(1, currentWeek),
+                        total: activeTreatment.duration_weeks,
+                      })}
                     </p>
                   ) : null}
                 </div>
@@ -226,7 +230,10 @@ export function DashboardClient({
                   <ProgressBar value={progressPct} />
                   <div className="mt-2 flex items-center justify-between text-xs text-muted">
                     <span>
-                      {treatmentCompleted} of {treatmentDoses.length} doses
+                      {t("dash.dosesOf", {
+                        completed: treatmentCompleted,
+                        total: treatmentDoses.length,
+                      })}
                     </span>
                     <span>{Math.round(progressPct)}%</span>
                   </div>
@@ -239,7 +246,7 @@ export function DashboardClient({
                 </p>
               </>
             ) : (
-              <p className="text-sm text-muted">No active treatment.</p>
+              <p className="text-sm text-muted">{t("dash.noActive")}</p>
             )}
           </CardBody>
         </Card>
@@ -247,13 +254,13 @@ export function DashboardClient({
         {/* Site rotation */}
         <Card>
           <CardHeader
-            title="Injection sites"
+            title={t("dash.injectionSites")}
             action={
               <Link
                 href="/injection-sites"
                 className="text-xs font-medium text-muted hover:text-ink transition-colors flex items-center gap-1"
               >
-                View all <ArrowRight className="size-3" />
+                {t("common.viewAll")} <ArrowRight className="size-3" />
               </Link>
             }
           />
@@ -261,10 +268,9 @@ export function DashboardClient({
             <InjectionSiteMap summaries={data.siteSummaries} />
             {recommended && (
               <p className="mt-4 text-sm text-ink-soft bg-tan-faint border border-tan-soft rounded-xl px-3.5 py-2.5">
-                Next suggested:{" "}
-                <span className="font-semibold text-ink">
-                  {recommended.site.name}
-                </span>
+                {t("dash.nextSuggested", {
+                  name: siteName(t, recommended.site),
+                })}
               </p>
             )}
           </CardBody>
@@ -273,13 +279,13 @@ export function DashboardClient({
         {/* Upcoming doses */}
         <Card>
           <CardHeader
-            title="Upcoming doses"
+            title={t("dash.upcomingDoses")}
             action={
               <Link
                 href="/calendar"
                 className="text-xs font-medium text-muted hover:text-ink transition-colors flex items-center gap-1"
               >
-                Calendar <ArrowRight className="size-3" />
+                {t("nav.calendar")} <ArrowRight className="size-3" />
               </Link>
             }
           />
@@ -298,7 +304,7 @@ export function DashboardClient({
             ) : (
               <EmptyState
                 icon={CalendarDays}
-                title="Nothing scheduled"
+                title={t("dash.nothingScheduled")}
                 className="py-6"
               />
             )}
@@ -308,14 +314,14 @@ export function DashboardClient({
         {/* Side effects */}
         <Card>
           <CardHeader
-            title="Side effects"
+            title={t("dash.sideEffects")}
             action={
               <button
                 type="button"
                 onClick={() => setSideEffectOpen(true)}
                 className="text-xs font-medium text-muted hover:text-ink transition-colors flex items-center gap-1"
               >
-                <Plus className="size-3" /> Record
+                <Plus className="size-3" /> {t("common.record")}
               </button>
             }
           />
@@ -327,7 +333,7 @@ export function DashboardClient({
             ) : (
               <EmptyState
                 icon={Sparkles}
-                title="No side effects recorded"
+                title={t("dash.noSideEffects")}
                 className="py-6"
               />
             )}
@@ -337,17 +343,23 @@ export function DashboardClient({
 
       {/* Quick statistics */}
       <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-        <StatCard label="Doses completed" value={stats.completed} />
-        <StatCard label="Doses remaining" value={stats.remaining} />
+        <StatCard label={t("dash.stat.completed")} value={stats.completed} />
+        <StatCard label={t("dash.stat.remaining")} value={stats.remaining} />
         <StatCard
-          label="Adherence"
+          label={t("dash.stat.adherence")}
           value={stats.adherence !== null ? `${stats.adherence}%` : "—"}
         />
         <StatCard
-          label="Sites used"
-          value={`${stats.sitesUsed} of ${stats.sitesTotal}`}
+          label={t("dash.stat.sitesUsed")}
+          value={t("dash.sitesUsedValue", {
+            used: stats.sitesUsed,
+            total: stats.sitesTotal,
+          })}
         />
-        <StatCard label="Side effects" value={stats.sideEffectCount} />
+        <StatCard
+          label={t("dash.stat.sideEffects")}
+          value={stats.sideEffectCount}
+        />
       </div>
 
       {doseToRecord && (

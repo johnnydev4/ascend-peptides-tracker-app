@@ -19,10 +19,13 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input, Select } from "@/components/ui/Field";
+import { useI18n } from "@/lib/i18n/context";
+import { LOCALES, LOCALE_LABELS, type Locale } from "@/lib/i18n/config";
 
 export default function SettingsPage() {
   const router = useRouter();
   const { user } = useUser();
+  const { t, locale, setLocale } = useI18n();
   const [displayName, setDisplayName] = useState("");
   const [savedName, setSavedName] = useState(false);
   const [prefs, setPrefs] = useState<NotificationPreferences>(DEFAULT_PREFERENCES);
@@ -94,11 +97,11 @@ export default function SettingsPage() {
 
   return (
     <div className="max-w-xl">
-      <PageHeader title="Settings" />
+      <PageHeader title={t("set.title")} />
 
       <div className="space-y-4">
         <Card>
-          <CardHeader title="Profile" />
+          <CardHeader title={t("set.profile")} />
           <CardBody className="space-y-4">
             <div className="flex items-center gap-3 text-sm text-muted">
               <UserRound className="size-4" />
@@ -107,32 +110,48 @@ export default function SettingsPage() {
             <div className="flex items-end gap-3">
               <div className="flex-1">
                 <Input
-                  label="Display name"
+                  label={t("set.displayName")}
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
-                  placeholder="Your name"
+                  placeholder={t("set.yourName")}
                 />
               </div>
               <Button variant="secondary" onClick={saveName}>
-                {savedName ? "Saved ✓" : "Save"}
+                {savedName ? t("common.saved") : t("common.save")}
               </Button>
             </div>
           </CardBody>
         </Card>
 
         <Card>
-          <CardHeader title="Dose reminders" />
+          <CardHeader title={t("set.language")} />
+          <CardBody className="space-y-3">
+            <Select
+              label={t("set.language")}
+              hint={t("set.languageDesc")}
+              value={locale}
+              onChange={(e) => setLocale(e.target.value as Locale)}
+            >
+              {LOCALES.map((l) => (
+                <option key={l} value={l}>
+                  {LOCALE_LABELS[l]}
+                </option>
+              ))}
+            </Select>
+          </CardBody>
+        </Card>
+
+        <Card>
+          <CardHeader title={t("set.reminders")} />
           <CardBody className="space-y-4">
             {!notifSupported ? (
-              <p className="text-sm text-muted">
-                Notifications aren&apos;t available in this browser.
-              </p>
+              <p className="text-sm text-muted">{t("set.noNotifications")}</p>
             ) : (
               <>
                 <label className="flex items-center justify-between gap-3 cursor-pointer">
                   <span className="flex items-center gap-2.5 text-sm text-ink">
                     <BellRing className="size-4 text-muted" />
-                    Remind me about upcoming doses
+                    {t("set.remindUpcoming")}
                   </span>
                   <input
                     type="checkbox"
@@ -142,28 +161,23 @@ export default function SettingsPage() {
                   />
                 </label>
                 {notifDenied && (
-                  <p className="text-xs text-terracotta">
-                    Notifications are blocked for this site — allow them in your
-                    browser settings to enable reminders.
-                  </p>
+                  <p className="text-xs text-terracotta">{t("set.blocked")}</p>
                 )}
                 {prefs.enabled && (
                   <Select
-                    label="Remind me"
+                    label={t("set.remindMe")}
                     value={String(prefs.minutesBefore)}
                     onChange={(e) => setMinutes(Number(e.target.value))}
                   >
-                    <option value="0">At the scheduled time</option>
-                    <option value="5">5 minutes before</option>
-                    <option value="15">15 minutes before</option>
-                    <option value="30">30 minutes before</option>
-                    <option value="60">1 hour before</option>
+                    <option value="0">{t("set.remindAt")}</option>
+                    <option value="5">{t("set.remind5")}</option>
+                    <option value="15">{t("set.remind15")}</option>
+                    <option value="30">{t("set.remind30")}</option>
+                    <option value="60">{t("set.remind60")}</option>
                   </Select>
                 )}
                 <p className="text-xs text-muted leading-relaxed">
-                  Reminders are shown while the app is open in your browser.
-                  Support varies by platform — iOS requires the app to be
-                  installed to the home screen.
+                  {t("set.remindersNote")}
                 </p>
               </>
             )}
@@ -171,27 +185,21 @@ export default function SettingsPage() {
         </Card>
 
         <Card>
-          <CardHeader title="App" />
+          <CardHeader title={t("set.app")} />
           <CardBody className="space-y-3">
             <p className="flex items-center gap-2.5 text-sm text-muted">
               <Download className="size-4" />
-              Install: use your browser&apos;s “Add to Home Screen” / “Install
-              app” option for a full-screen experience.
+              {t("set.install")}
             </p>
           </CardBody>
         </Card>
 
         {isDemoMode() && (
           <Card>
-            <CardHeader title="Demo mode" />
+            <CardHeader title={t("set.demoTitle")} />
             <CardBody className="space-y-3">
               <p className="text-sm text-muted leading-relaxed">
-                You&apos;re exploring with sample data stored only in this
-                browser — no account or server involved. Add Supabase keys to
-                <code className="mx-1 rounded bg-cream-deep px-1 py-0.5 text-xs">
-                  .env.local
-                </code>
-                to switch to a real backend.
+                {t("set.demoBody")}
               </p>
               <Button
                 variant="secondary"
@@ -200,7 +208,7 @@ export default function SettingsPage() {
                   window.location.reload();
                 }}
               >
-                Reset demo data
+                {t("set.resetDemo")}
               </Button>
             </CardBody>
           </Card>
@@ -209,7 +217,7 @@ export default function SettingsPage() {
         <Card>
           <CardBody className="pt-5">
             <Button variant="secondary" onClick={signOut} className="w-full">
-              <LogOut className="size-4" /> Sign out
+              <LogOut className="size-4" /> {t("common.signOut")}
             </Button>
           </CardBody>
         </Card>

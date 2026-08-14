@@ -7,12 +7,14 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { MailCheck } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { useI18n } from "@/lib/i18n/context";
 import { signupSchema, type SignupInput } from "@/lib/validation/auth";
 import { Input } from "@/components/ui/Field";
 import { Button } from "@/components/ui/Button";
 
 export default function SignupPage() {
   const router = useRouter();
+  const { t } = useI18n();
   const [serverError, setServerError] = useState<string | null>(null);
   const [emailSent, setEmailSent] = useState(false);
 
@@ -37,7 +39,6 @@ export default function SignupPage() {
       setServerError(error.message);
       return;
     }
-    // If email confirmation is disabled the user gets a session right away.
     if (data.session) {
       router.push("/dashboard");
       router.refresh();
@@ -52,13 +53,14 @@ export default function SignupPage() {
         <div className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-sage-soft text-sage mb-4">
           <MailCheck className="size-5" aria-hidden />
         </div>
-        <h1 className="text-xl font-semibold text-ink">Check your inbox</h1>
+        <h1 className="text-xl font-semibold text-ink">
+          {t("common.checkInbox")}
+        </h1>
         <p className="mt-2 text-sm text-muted leading-relaxed">
-          We sent a confirmation link to your email. Open it to activate your
-          account, then sign in.
+          {t("auth.confirmEmailBody")}
         </p>
         <Link href="/login" className="mt-6 inline-block">
-          <Button variant="secondary">Back to sign in</Button>
+          <Button variant="secondary">{t("common.backToSignIn")}</Button>
         </Link>
       </div>
     );
@@ -66,10 +68,8 @@ export default function SignupPage() {
 
   return (
     <>
-      <h1 className="text-xl font-semibold text-ink">Create your account</h1>
-      <p className="mt-1 text-sm text-muted">
-        A private space for your protocol.
-      </p>
+      <h1 className="text-xl font-semibold text-ink">{t("auth.createTitle")}</h1>
+      <p className="mt-1 text-sm text-muted">{t("auth.createSubtitle")}</p>
 
       <form
         onSubmit={handleSubmit(onSubmit)}
@@ -77,14 +77,14 @@ export default function SignupPage() {
         noValidate
       >
         <Input
-          label="Name"
+          label={t("auth.name")}
           autoComplete="name"
           placeholder="Alex"
           error={errors.displayName?.message}
           {...register("displayName")}
         />
         <Input
-          label="Email"
+          label={t("auth.email")}
           type="email"
           autoComplete="email"
           placeholder="you@example.com"
@@ -92,18 +92,18 @@ export default function SignupPage() {
           {...register("email")}
         />
         <Input
-          label="Password"
+          label={t("auth.password")}
           type="password"
           autoComplete="new-password"
-          placeholder="At least 8 characters"
+          placeholder={t("auth.min8")}
           error={errors.password?.message}
           {...register("password")}
         />
         <Input
-          label="Confirm password"
+          label={t("auth.confirmPassword")}
           type="password"
           autoComplete="new-password"
-          placeholder="Repeat your password"
+          placeholder={t("auth.repeatPassword")}
           error={errors.confirmPassword?.message}
           {...register("confirmPassword")}
         />
@@ -115,17 +115,17 @@ export default function SignupPage() {
         )}
 
         <Button type="submit" className="w-full" loading={isSubmitting}>
-          Create account
+          {t("auth.createAccount")}
         </Button>
       </form>
 
       <p className="mt-5 text-center text-sm text-muted">
-        Already have an account?{" "}
+        {t("auth.haveAccount")}{" "}
         <Link
           href="/login"
           className="font-medium text-ink hover:underline underline-offset-4"
         >
-          Sign in
+          {t("common.signIn")}
         </Link>
       </p>
     </>

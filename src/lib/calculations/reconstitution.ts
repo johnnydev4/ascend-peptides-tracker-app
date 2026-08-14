@@ -31,11 +31,12 @@ export function calculateReconstitution(
   const { vialQuantity, vialUnit, desiredConcentration, concentrationUnit } =
     input;
 
+  // Error messages are i18n keys, translated by the caller at render time.
   if (!Number.isFinite(vialQuantity) || vialQuantity <= 0) {
-    throw new CalculationError("Vial quantity must be greater than zero.");
+    throw new CalculationError("calc.errZeroVial");
   }
   if (!Number.isFinite(desiredConcentration) || desiredConcentration <= 0) {
-    throw new CalculationError("Concentration must be greater than zero.");
+    throw new CalculationError("calc.errZeroConc");
   }
 
   const vialMg = vialUnit === "mcg" ? vialQuantity / 1000 : vialQuantity;
@@ -47,12 +48,10 @@ export function calculateReconstitution(
   const volumeMl = vialMg / concentrationMgPerMl;
 
   if (!Number.isFinite(volumeMl) || volumeMl <= 0) {
-    throw new CalculationError("These values do not produce a valid volume.");
+    throw new CalculationError("calc.errInvalid");
   }
   if (volumeMl > 1000) {
-    throw new CalculationError(
-      "The resulting volume exceeds 1000 mL — check the concentration."
-    );
+    throw new CalculationError("calc.errTooLarge");
   }
 
   return {

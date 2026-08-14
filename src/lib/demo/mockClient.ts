@@ -415,7 +415,7 @@ export function createMockClient(): any {
       async exchangeCodeForSession() {
         return { data: { session: makeSession() }, error: null };
       },
-      onAuthStateChange(_cb: unknown) {
+      onAuthStateChange() {
         return {
           data: { subscription: { unsubscribe() {} } },
         };

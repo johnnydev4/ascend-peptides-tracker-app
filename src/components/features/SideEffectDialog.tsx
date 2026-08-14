@@ -8,19 +8,20 @@ import { createClient } from "@/lib/supabase/client";
 import { createSideEffect } from "@/lib/data/side-effects";
 import {
   sideEffectSchema,
-  COMMON_SIDE_EFFECTS,
+  COMMON_SIDE_EFFECT_KEYS,
   type SideEffectInput,
 } from "@/lib/validation/side-effect";
 import type { Treatment } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/lib/i18n/context";
 import { Dialog } from "@/components/ui/Dialog";
 import { Button } from "@/components/ui/Button";
 import { Input, Select, Textarea, FieldWrapper } from "@/components/ui/Field";
 
 const SEVERITIES = [
-  { value: "mild", label: "Mild" },
-  { value: "moderate", label: "Moderate" },
-  { value: "severe", label: "Severe" },
+  { value: "mild", labelKey: "severityOpt.mild" },
+  { value: "moderate", labelKey: "severityOpt.moderate" },
+  { value: "severe", labelKey: "severityOpt.severe" },
 ] as const;
 
 export function SideEffectDialog({
@@ -36,6 +37,7 @@ export function SideEffectDialog({
   userId: string;
   treatments: Treatment[];
 }) {
+  const { t } = useI18n();
   const [serverError, setServerError] = useState<string | null>(null);
   const [customName, setCustomName] = useState(false);
 
@@ -70,24 +72,24 @@ export function SideEffectDialog({
       onClose();
     } catch (error) {
       setServerError(
-        error instanceof Error ? error.message : "Something went wrong."
+        error instanceof Error ? error.message : t("common.somethingWrong")
       );
     }
   };
 
   return (
-    <Dialog open={open} onClose={onClose} title="Record side effect">
+    <Dialog open={open} onClose={onClose} title={t("se.dialogTitle")}>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
         {customName ? (
           <Input
-            label="Side effect"
-            placeholder="Describe the side effect"
+            label={t("se.field")}
+            placeholder={t("se.describePh")}
             error={errors.name?.message}
             {...register("name")}
           />
         ) : (
           <Select
-            label="Side effect"
+            label={t("se.field")}
             error={errors.name?.message}
             {...register("name", {
               onChange: (e) => {
@@ -98,20 +100,20 @@ export function SideEffectDialog({
               },
             })}
           >
-            <option value="">Choose…</option>
-            {COMMON_SIDE_EFFECTS.map((name) => (
-              <option key={name} value={name}>
-                {name}
+            <option value="">{t("se.choose")}</option>
+            {COMMON_SIDE_EFFECT_KEYS.map((key) => (
+              <option key={key} value={t(key)}>
+                {t(key)}
               </option>
             ))}
-            <option value="__custom__">Other (type your own)</option>
+            <option value="__custom__">{t("se.other")}</option>
           </Select>
         )}
 
-        <FieldWrapper label="Severity">
+        <FieldWrapper label={t("se.severity")}>
           <div
             role="radiogroup"
-            aria-label="Severity"
+            aria-label={t("se.severity")}
             className="grid grid-cols-3 gap-2"
           >
             {SEVERITIES.map((option) => (
@@ -130,7 +132,7 @@ export function SideEffectDialog({
                     : "border-line bg-surface text-ink-soft hover:border-line-strong"
                 )}
               >
-                {option.label}
+                {t(option.labelKey)}
               </button>
             ))}
           </div>
@@ -138,13 +140,13 @@ export function SideEffectDialog({
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Input
-            label="Started"
+            label={t("se.started")}
             type="datetime-local"
             error={errors.startedAt?.message}
             {...register("startedAt")}
           />
           <Input
-            label="Ended (optional)"
+            label={t("se.ended")}
             type="datetime-local"
             error={errors.endedAt?.message}
             {...register("endedAt")}
@@ -152,26 +154,25 @@ export function SideEffectDialog({
         </div>
 
         {treatments.length > 0 && (
-          <Select label="Treatment (optional)" {...register("treatmentId")}>
-            <option value="">Not linked</option>
-            {treatments.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.name}
+          <Select label={t("se.treatment")} {...register("treatmentId")}>
+            <option value="">{t("se.notLinked")}</option>
+            {treatments.map((tr) => (
+              <option key={tr.id} value={tr.id}>
+                {tr.name}
               </option>
             ))}
           </Select>
         )}
 
         <Textarea
-          label="Notes (optional)"
-          placeholder="Context, timing relative to the dose, what helped…"
+          label={`${t("form.notes")} ${t("common.optional")}`}
+          placeholder={t("se.notesPh")}
           error={errors.notes?.message}
           {...register("notes")}
         />
 
         <p className="text-xs text-muted leading-relaxed">
-          Severe or concerning symptoms should be discussed with a qualified
-          healthcare professional.
+          {t("se.professionalNote")}
         </p>
 
         {serverError && (
@@ -182,10 +183,10 @@ export function SideEffectDialog({
 
         <div className="flex gap-3 justify-end pt-1">
           <Button type="button" variant="secondary" onClick={onClose}>
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button type="submit" loading={isSubmitting}>
-            Save record
+            {t("se.saveRecord")}
           </Button>
         </div>
       </form>

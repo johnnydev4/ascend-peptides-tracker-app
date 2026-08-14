@@ -11,11 +11,15 @@ import {
   type TreatmentInput,
   type TreatmentFormValues,
 } from "@/lib/validation/treatment";
-import { WEEKDAY_LABELS, generateSchedule } from "@/lib/calendar/generate";
+import { generateSchedule } from "@/lib/calendar/generate";
 import type { Treatment } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/lib/i18n/context";
 import { Button } from "@/components/ui/Button";
 import { Input, Select, Textarea, FieldWrapper } from "@/components/ui/Field";
+
+// Mon-first ordering of weekday values (0 = Sunday).
+const WEEKDAY_ORDER = [1, 2, 3, 4, 5, 6, 0];
 
 function toDefaults(treatment?: Treatment): Partial<TreatmentFormValues> {
   if (!treatment) {
@@ -54,6 +58,7 @@ export function TreatmentForm({
   onSubmit: (values: TreatmentInput) => Promise<void>;
   submitLabel: string;
 }) {
+  const { t } = useI18n();
   const [serverError, setServerError] = useState<string | null>(null);
 
   const {
@@ -96,7 +101,7 @@ export function TreatmentForm({
       await onSubmit(values);
     } catch (error) {
       setServerError(
-        error instanceof Error ? error.message : "Something went wrong."
+        error instanceof Error ? error.message : t("common.somethingWrong")
       );
     }
   };
@@ -104,15 +109,15 @@ export function TreatmentForm({
   return (
     <form onSubmit={handleSubmit(submit)} className="space-y-5" noValidate>
       <Input
-        label="Peptide name"
-        placeholder="e.g. Retatrutide"
+        label={t("form.peptideName")}
+        placeholder={t("form.peptideNamePh")}
         error={errors.name?.message}
         {...register("name")}
       />
 
       <div className="grid grid-cols-2 gap-3">
         <Input
-          label="Vial quantity (optional)"
+          label={`${t("form.vialQuantity")} ${t("common.optional")}`}
           type="number"
           step="any"
           inputMode="decimal"
@@ -120,7 +125,7 @@ export function TreatmentForm({
           error={errors.vialQuantity?.message}
           {...register("vialQuantity")}
         />
-        <Select label="Vial unit" {...register("vialUnit")}>
+        <Select label={t("form.vialUnit")} {...register("vialUnit")}>
           {VIAL_UNITS.map((unit) => (
             <option key={unit} value={unit}>
               {unit}
@@ -131,7 +136,7 @@ export function TreatmentForm({
 
       <div className="grid grid-cols-2 gap-3">
         <Input
-          label="Dose amount"
+          label={t("form.doseAmount")}
           type="number"
           step="any"
           inputMode="decimal"
@@ -139,7 +144,7 @@ export function TreatmentForm({
           error={errors.doseAmount?.message}
           {...register("doseAmount")}
         />
-        <Select label="Dose unit" {...register("doseUnit")}>
+        <Select label={t("form.doseUnit")} {...register("doseUnit")}>
           {DOSE_UNITS.map((unit) => (
             <option key={unit} value={unit}>
               {unit}
@@ -150,13 +155,13 @@ export function TreatmentForm({
 
       <div className="grid grid-cols-2 gap-3">
         <Input
-          label="Start date"
+          label={t("form.startDate")}
           type="date"
           error={errors.startDate?.message}
           {...register("startDate")}
         />
         <Input
-          label="Duration (weeks)"
+          label={t("form.durationWeeks")}
           type="number"
           inputMode="numeric"
           error={errors.durationWeeks?.message}
@@ -166,16 +171,16 @@ export function TreatmentForm({
 
       <div className="grid grid-cols-2 gap-3">
         <Select
-          label="Frequency"
+          label={t("form.frequency")}
           error={errors.frequency?.message}
           {...register("frequency")}
         >
-          <option value="daily">Every day</option>
-          <option value="every_n_days">Every N days</option>
-          <option value="weekly_days">Specific weekdays</option>
+          <option value="daily">{t("form.freqEveryDay")}</option>
+          <option value="every_n_days">{t("form.freqEveryN")}</option>
+          <option value="weekly_days">{t("form.freqWeekdays")}</option>
         </Select>
         <Input
-          label="Time"
+          label={t("form.time")}
           type="time"
           error={errors.scheduledTime?.message}
           {...register("scheduledTime")}
@@ -184,11 +189,11 @@ export function TreatmentForm({
 
       {frequency === "every_n_days" && (
         <Input
-          label="Interval (days)"
+          label={t("form.intervalDays")}
           type="number"
           inputMode="numeric"
           placeholder="3"
-          hint="A dose every this many days, starting on the start date."
+          hint={t("form.intervalHint")}
           error={errors.intervalDays?.message}
           {...register("intervalDays")}
         />
@@ -200,23 +205,23 @@ export function TreatmentForm({
           name="scheduledDays"
           render={({ field }) => (
             <FieldWrapper
-              label="Days of the week"
+              label={t("form.daysOfWeek")}
               error={errors.scheduledDays?.message as string | undefined}
             >
               <div className="flex flex-wrap gap-2">
-                {WEEKDAY_LABELS.map((day) => {
-                  const selected = (field.value ?? []).includes(day.value);
+                {WEEKDAY_ORDER.map((value) => {
+                  const selected = (field.value ?? []).includes(value);
                   return (
                     <button
-                      key={day.value}
+                      key={value}
                       type="button"
                       aria-pressed={selected}
                       onClick={() => {
                         const current = field.value ?? [];
                         field.onChange(
                           selected
-                            ? current.filter((d) => d !== day.value)
-                            : [...current, day.value]
+                            ? current.filter((d) => d !== value)
+                            : [...current, value]
                         );
                       }}
                       className={cn(
@@ -226,7 +231,7 @@ export function TreatmentForm({
                           : "border-line bg-surface text-ink-soft hover:border-line-strong"
                       )}
                     >
-                      {day.label}
+                      {t(`weekday.${value}`)}
                     </button>
                   );
                 })}
@@ -237,17 +242,18 @@ export function TreatmentForm({
       )}
 
       <Textarea
-        label="Notes (optional)"
-        placeholder="Protocol details, supplier, batch, anything useful…"
+        label={`${t("form.notes")} ${t("common.optional")}`}
+        placeholder={t("form.notesTreatmentPh")}
         error={errors.notes?.message}
         {...register("notes")}
       />
 
       {totalDoses !== null && totalDoses > 0 && (
         <p className="text-sm text-muted bg-tan-faint border border-tan-soft rounded-xl px-4 py-3">
-          This schedule generates{" "}
-          <span className="font-semibold text-ink">{totalDoses} doses</span>{" "}
-          over {String(durationWeeks)} weeks.
+          {t("form.schedulePreview", {
+            n: totalDoses,
+            weeks: String(durationWeeks),
+          })}
         </p>
       )}
 

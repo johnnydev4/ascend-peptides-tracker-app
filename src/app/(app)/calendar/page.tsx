@@ -20,7 +20,8 @@ import { useUser } from "@/hooks/useUser";
 import { listDosesBetween } from "@/lib/data/doses";
 import { getSiteUsageSummaries } from "@/lib/data/injection-sites";
 import type { DoseWithRelations } from "@/lib/types";
-import { cn, formatDay, toDate } from "@/lib/utils";
+import { cn, formatDay, formatMonthYear, toDate } from "@/lib/utils";
+import { useI18n } from "@/lib/i18n/context";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { Spinner } from "@/components/ui/Spinner";
@@ -38,6 +39,7 @@ const statusDot: Record<string, string> = {
 
 export default function CalendarPage() {
   const { user } = useUser();
+  const { t } = useI18n();
   const [month, setMonth] = useState(startOfMonth(new Date()));
   const [selectedDay, setSelectedDay] = useState<Date>(new Date());
   const [doseToRecord, setDoseToRecord] = useState<DoseWithRelations | null>(null);
@@ -62,21 +64,18 @@ export default function CalendarPage() {
 
   return (
     <div>
-      <PageHeader
-        title="Calendar"
-        subtitle="Scheduled doses, generated from your treatments."
-      />
+      <PageHeader title={t("cal.title")} subtitle={t("cal.subtitle")} />
 
       <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
         <Card>
           <CardHeader
-            title={format(month, "MMMM yyyy")}
+            title={formatMonthYear(month)}
             action={
               <div className="flex items-center gap-1">
                 <button
                   type="button"
                   onClick={() => setMonth(addMonths(month, -1))}
-                  aria-label="Previous month"
+                  aria-label={t("cal.prevMonth")}
                   className="rounded-lg p-1.5 text-muted hover:bg-cream-deep hover:text-ink transition-colors"
                 >
                   <ChevronLeft className="size-4" />
@@ -89,12 +88,12 @@ export default function CalendarPage() {
                   }}
                   className="rounded-lg px-2.5 py-1 text-xs font-medium text-muted hover:bg-cream-deep hover:text-ink transition-colors"
                 >
-                  Today
+                  {t("cal.today")}
                 </button>
                 <button
                   type="button"
                   onClick={() => setMonth(addMonths(month, 1))}
-                  aria-label="Next month"
+                  aria-label={t("cal.nextMonth")}
                   className="rounded-lg p-1.5 text-muted hover:bg-cream-deep hover:text-ink transition-colors"
                 >
                   <ChevronRight className="size-4" />
@@ -108,8 +107,8 @@ export default function CalendarPage() {
             ) : (
               <>
                 <div className="grid grid-cols-7 text-center text-[11px] font-medium text-muted mb-2">
-                  {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => (
-                    <span key={d}>{d}</span>
+                  {[1, 2, 3, 4, 5, 6, 0].map((d) => (
+                    <span key={d}>{t(`weekday.${d}`)}</span>
                   ))}
                 </div>
                 <div className="grid grid-cols-7 gap-1">
@@ -121,7 +120,7 @@ export default function CalendarPage() {
                         key={day.toISOString()}
                         type="button"
                         onClick={() => setSelectedDay(day)}
-                        aria-label={format(day, "MMMM d")}
+                        aria-label={formatDay(day)}
                         aria-pressed={selected}
                         className={cn(
                           "flex flex-col items-center gap-1 rounded-xl py-2 text-sm transition-colors min-h-12",
@@ -150,15 +149,15 @@ export default function CalendarPage() {
                   })}
                 </div>
                 <div className="mt-4 flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-muted">
-                  {Object.entries({
-                    Scheduled: "bg-line-strong",
-                    Completed: "bg-sage",
-                    Missed: "bg-terracotta",
-                    Skipped: "bg-amber",
-                  }).map(([label, color]) => (
-                    <span key={label} className="flex items-center gap-1.5">
+                  {[
+                    ["statusOpt.scheduled", "bg-line-strong"],
+                    ["statusOpt.completed", "bg-sage"],
+                    ["statusOpt.missed", "bg-terracotta"],
+                    ["statusOpt.skipped", "bg-amber"],
+                  ].map(([labelKey, color]) => (
+                    <span key={labelKey} className="flex items-center gap-1.5">
                       <span className={cn("size-2 rounded-full", color)} />
-                      {label}
+                      {t(labelKey)}
                     </span>
                   ))}
                 </div>
@@ -182,7 +181,7 @@ export default function CalendarPage() {
             ) : (
               <EmptyState
                 icon={CalendarDays}
-                title="No doses this day"
+                title={t("cal.noDosesDay")}
                 className="py-8"
               />
             )}

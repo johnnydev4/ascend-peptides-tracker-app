@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createClient } from "@/lib/supabase/client";
+import { useI18n } from "@/lib/i18n/context";
 import {
   resetPasswordSchema,
   type ResetPasswordInput,
@@ -14,6 +15,7 @@ import { Button } from "@/components/ui/Button";
 
 export default function ResetPasswordPage() {
   const router = useRouter();
+  const { t } = useI18n();
   const [serverError, setServerError] = useState<string | null>(null);
 
   const {
@@ -33,7 +35,7 @@ export default function ResetPasswordPage() {
     if (error) {
       setServerError(
         error.message.includes("session")
-          ? "This reset link has expired. Request a new one."
+          ? t("auth.resetExpired")
           : error.message
       );
       return;
@@ -44,10 +46,10 @@ export default function ResetPasswordPage() {
 
   return (
     <>
-      <h1 className="text-xl font-semibold text-ink">Choose a new password</h1>
-      <p className="mt-1 text-sm text-muted">
-        You&apos;re signed in through your reset link — set a new password below.
-      </p>
+      <h1 className="text-xl font-semibold text-ink">
+        {t("auth.newPasswordTitle")}
+      </h1>
+      <p className="mt-1 text-sm text-muted">{t("auth.newPasswordSubtitle")}</p>
 
       <form
         onSubmit={handleSubmit(onSubmit)}
@@ -55,18 +57,18 @@ export default function ResetPasswordPage() {
         noValidate
       >
         <Input
-          label="New password"
+          label={t("auth.newPassword")}
           type="password"
           autoComplete="new-password"
-          placeholder="At least 8 characters"
+          placeholder={t("auth.min8")}
           error={errors.password?.message}
           {...register("password")}
         />
         <Input
-          label="Confirm password"
+          label={t("auth.confirmPassword")}
           type="password"
           autoComplete="new-password"
-          placeholder="Repeat your new password"
+          placeholder={t("auth.repeatNewPassword")}
           error={errors.confirmPassword?.message}
           {...register("confirmPassword")}
         />
@@ -78,7 +80,7 @@ export default function ResetPasswordPage() {
         )}
 
         <Button type="submit" className="w-full" loading={isSubmitting}>
-          Update password
+          {t("auth.updatePassword")}
         </Button>
       </form>
     </>

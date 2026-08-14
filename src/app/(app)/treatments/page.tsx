@@ -11,6 +11,7 @@ import { Card } from "@/components/ui/Card";
 import { Spinner } from "@/components/ui/Spinner";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { TreatmentCard } from "@/components/features/TreatmentCard";
+import { useI18n } from "@/lib/i18n/context";
 
 interface DoseCount {
   treatment_id: string;
@@ -18,6 +19,7 @@ interface DoseCount {
 }
 
 export default function TreatmentsPage() {
+  const { t } = useI18n();
   const { data, loading } = useAsyncData(async () => {
     const supabase = createClient();
     const [treatments, doseRows] = await Promise.all([
@@ -38,12 +40,12 @@ export default function TreatmentsPage() {
   return (
     <div>
       <PageHeader
-        title="Treatments"
-        subtitle="Your protocols and their schedules."
+        title={t("tr.title")}
+        subtitle={t("tr.subtitle")}
         action={
           <Link href="/treatments/new">
             <Button>
-              <Plus className="size-4" /> New treatment
+              <Plus className="size-4" /> {t("tr.new")}
             </Button>
           </Link>
         }
@@ -53,12 +55,12 @@ export default function TreatmentsPage() {
         <Card>
           <EmptyState
             icon={Syringe}
-            title="No treatments yet"
-            description="Create a treatment and its dose calendar will be generated from your schedule."
+            title={t("dash.noTreatmentsTitle")}
+            description={t("tr.emptyDesc")}
             action={
               <Link href="/treatments/new">
                 <Button>
-                  <Plus className="size-4" /> Create treatment
+                  <Plus className="size-4" /> {t("tr.createTreatment")}
                 </Button>
               </Link>
             }

@@ -5,12 +5,14 @@ import { usePathname, useRouter } from "next/navigation";
 import { LogOut } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/lib/i18n/context";
 import { Wordmark } from "./Logo";
 import { NAV_ITEMS } from "./nav-items";
 
 export function Sidebar({ displayName }: { displayName: string }) {
   const pathname = usePathname();
   const router = useRouter();
+  const { t } = useI18n();
 
   const signOut = async () => {
     const supabase = createClient();
@@ -42,7 +44,7 @@ export function Sidebar({ displayName }: { displayName: string }) {
               )}
             >
               <item.icon className="size-[18px]" strokeWidth={1.8} aria-hidden />
-              {item.label}
+              {t(item.label)}
             </Link>
           );
         })}
@@ -51,12 +53,12 @@ export function Sidebar({ displayName }: { displayName: string }) {
       <div className="mt-6 flex items-center justify-between gap-2 border-t border-line pt-4 px-1">
         <div className="min-w-0">
           <p className="truncate text-sm font-medium text-ink">{displayName}</p>
-          <p className="text-xs text-muted">Signed in</p>
+          <p className="text-xs text-muted">{t("nav.signedIn")}</p>
         </div>
         <button
           type="button"
           onClick={signOut}
-          aria-label="Sign out"
+          aria-label={t("common.signOut")}
           className="rounded-lg p-2 text-muted hover:bg-cream-deep hover:text-ink transition-colors"
         >
           <LogOut className="size-4" />

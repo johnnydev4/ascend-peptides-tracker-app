@@ -10,6 +10,7 @@ import {
 } from "@/lib/data/doses";
 import type { DoseWithRelations } from "@/lib/types";
 import { toDate } from "@/lib/utils";
+import { useI18n } from "@/lib/i18n/context";
 import { Dialog } from "@/components/ui/Dialog";
 import { Button } from "@/components/ui/Button";
 import { Input, Textarea } from "@/components/ui/Field";
@@ -26,6 +27,7 @@ export function EditDoseDialog({
   onClose: () => void;
   onSaved: () => void;
 }) {
+  const { t } = useI18n();
   const [scheduledAt, setScheduledAt] = useState(
     format(toDate(dose.scheduled_at), "yyyy-MM-dd'T'HH:mm")
   );
@@ -51,7 +53,7 @@ export function EditDoseDialog({
       onSaved();
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong.");
+      setError(err instanceof Error ? err.message : t("common.somethingWrong"));
     } finally {
       setBusy(false);
     }
@@ -61,21 +63,21 @@ export function EditDoseDialog({
     <Dialog
       open={open}
       onClose={onClose}
-      title={`Edit dose — ${dose.treatment?.name ?? "Treatment"}`}
+      title={t("edd.title", { name: dose.treatment?.name ?? t("hist.treatment") })}
       className="sm:max-w-md"
     >
       <div className="space-y-4">
         <Input
-          label="Scheduled for"
+          label={t("edd.scheduledFor")}
           type="datetime-local"
           value={scheduledAt}
           onChange={(e) => setScheduledAt(e.target.value)}
         />
         <Textarea
-          label="Notes"
+          label={t("form.notes")}
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
-          placeholder="Notes for this dose…"
+          placeholder={t("edd.notesPh")}
         />
 
         {error && (
@@ -91,7 +93,7 @@ export function EditDoseDialog({
               onClick={() => save("skipped")}
               disabled={busy}
             >
-              Skip this dose
+              {t("edd.skip")}
             </Button>
           )}
           {dose.status === "skipped" && (
@@ -100,15 +102,15 @@ export function EditDoseDialog({
               onClick={() => save("scheduled")}
               disabled={busy}
             >
-              Restore to scheduled
+              {t("edd.restore")}
             </Button>
           )}
           <div className="flex gap-3 ml-auto">
             <Button variant="secondary" onClick={onClose} disabled={busy}>
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button onClick={() => save()} loading={busy}>
-              Save changes
+              {t("common.saveChanges")}
             </Button>
           </div>
         </div>

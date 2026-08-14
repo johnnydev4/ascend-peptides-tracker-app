@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import {
   CalendarDays,
@@ -10,46 +12,20 @@ import {
 import { Wordmark } from "@/components/layout/Logo";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { useI18n } from "@/lib/i18n/context";
 
 const FEATURES = [
-  {
-    icon: CalendarDays,
-    title: "Automatic calendar",
-    description:
-      "Your full dose schedule, generated from the protocol you configure.",
-  },
-  {
-    icon: Target,
-    title: "Site rotation",
-    description:
-      "A visual body map remembers where you injected and suggests where to go next.",
-  },
-  {
-    icon: Calculator,
-    title: "Reconstitution math",
-    description:
-      "BAC water calculations from your vial size and target concentration.",
-  },
-  {
-    icon: LineChart,
-    title: "Progress & history",
-    description:
-      "Adherence, completed doses, and side effects — all in one calm overview.",
-  },
-  {
-    icon: BellRing,
-    title: "Dose reminders",
-    description: "Optional notifications so a scheduled dose never slips by.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Private by design",
-    description:
-      "Your data is yours alone, protected with row-level security.",
-  },
-];
+  { icon: CalendarDays, key: "calendar" },
+  { icon: Target, key: "rotation" },
+  { icon: Calculator, key: "math" },
+  { icon: LineChart, key: "progress" },
+  { icon: BellRing, key: "reminders" },
+  { icon: ShieldCheck, key: "private" },
+] as const;
 
 export default function LandingPage() {
+  const { t } = useI18n();
+
   return (
     <div className="flex flex-1 flex-col">
       <header className="flex items-center justify-between px-6 py-5 max-w-5xl mx-auto w-full">
@@ -57,11 +33,11 @@ export default function LandingPage() {
         <div className="flex items-center gap-2">
           <Link href="/login">
             <Button variant="ghost" size="sm">
-              Sign in
+              {t("common.signIn")}
             </Button>
           </Link>
           <Link href="/signup">
-            <Button size="sm">Get started</Button>
+            <Button size="sm">{t("common.getStarted")}</Button>
           </Link>
         </div>
       </header>
@@ -69,36 +45,35 @@ export default function LandingPage() {
       <main className="flex-1 px-6 pb-20 max-w-5xl mx-auto w-full">
         <section className="py-16 sm:py-24 text-center max-w-2xl mx-auto">
           <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight text-ink leading-[1.1]">
-            A calm home for your peptide protocol.
+            {t("landing.heroTitle")}
           </h1>
           <p className="mt-5 text-lg text-muted leading-relaxed">
-            Track doses, rotate injection sites, log side effects, and see your
-            progress — organized automatically around the schedule you set.
+            {t("landing.heroSubtitle")}
           </p>
           <div className="mt-8 flex items-center justify-center gap-3">
             <Link href="/signup">
-              <Button size="lg">Create your tracker</Button>
+              <Button size="lg">{t("landing.createTracker")}</Button>
             </Link>
             <Link href="/login">
               <Button variant="secondary" size="lg">
-                Sign in
+                {t("common.signIn")}
               </Button>
             </Link>
           </div>
-          <p className="mt-6 text-xs text-muted">
-            A tracking and organization tool — not medical advice.
-          </p>
+          <p className="mt-6 text-xs text-muted">{t("landing.disclaimer")}</p>
         </section>
 
         <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {FEATURES.map((feature) => (
-            <Card key={feature.title} className="p-6">
+            <Card key={feature.key} className="p-6">
               <div className="flex size-10 items-center justify-center rounded-xl bg-tan-faint text-tan mb-4">
                 <feature.icon className="size-5" strokeWidth={1.8} aria-hidden />
               </div>
-              <h2 className="text-sm font-semibold text-ink">{feature.title}</h2>
+              <h2 className="text-sm font-semibold text-ink">
+                {t(`landing.feature.${feature.key}.title`)}
+              </h2>
               <p className="mt-1.5 text-sm text-muted leading-relaxed">
-                {feature.description}
+                {t(`landing.feature.${feature.key}.desc`)}
               </p>
             </Card>
           ))}
@@ -106,7 +81,7 @@ export default function LandingPage() {
       </main>
 
       <footer className="border-t border-line py-6 text-center text-xs text-muted">
-        Peptide Tracker — organize an existing treatment protocol.
+        {t("landing.footer")}
       </footer>
     </div>
   );

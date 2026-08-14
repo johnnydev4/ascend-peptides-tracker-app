@@ -25,11 +25,13 @@ import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input, Select } from "@/components/ui/Field";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { useI18n } from "@/lib/i18n/context";
 
 const SYRINGE_DOSES_MG = [0.25, 0.5, 1, 2, 2.5];
 
 export default function CalculatorPage() {
   const { user } = useUser();
+  const { t } = useI18n();
   const [result, setResult] = useState<ReconstitutionResult | null>(null);
   const [lastInputs, setLastInputs] = useState<CalculatorInput | null>(null);
   const [calcError, setCalcError] = useState<string | null>(null);
@@ -73,23 +75,20 @@ export default function CalculatorPage() {
       setResult(null);
       setCalcError(
         error instanceof CalculationError
-          ? error.message
-          : "Could not calculate with those values."
+          ? t(error.message)
+          : t("calc.errGeneric")
       );
     }
   };
 
   return (
     <div>
-      <PageHeader
-        title="Reconstitution calculator"
-        subtitle="A calculation tool based only on the values you enter — not medical guidance."
-      />
+      <PageHeader title={t("calc.title")} subtitle={t("calc.subtitle")} />
 
       <div className="grid gap-4 lg:grid-cols-[1.2fr_1fr]">
         <div className="space-y-4">
           <Card>
-            <CardHeader title="BAC water to add" />
+            <CardHeader title={t("calc.bacToAdd")} />
             <CardBody>
               <form
                 onSubmit={handleSubmit(onSubmit)}
@@ -98,7 +97,7 @@ export default function CalculatorPage() {
               >
                 <div className="grid grid-cols-2 gap-3">
                   <Input
-                    label="Vial quantity"
+                    label={t("calc.vialQuantity")}
                     type="number"
                     step="any"
                     inputMode="decimal"
@@ -106,14 +105,14 @@ export default function CalculatorPage() {
                     error={errors.vialQuantity?.message}
                     {...register("vialQuantity")}
                   />
-                  <Select label="Unit" {...register("vialUnit")}>
+                  <Select label={t("calc.unit")} {...register("vialUnit")}>
                     <option value="mg">mg</option>
                     <option value="mcg">mcg</option>
                   </Select>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <Input
-                    label="Desired concentration"
+                    label={t("calc.desiredConcentration")}
                     type="number"
                     step="any"
                     inputMode="decimal"
@@ -121,7 +120,7 @@ export default function CalculatorPage() {
                     error={errors.desiredConcentration?.message}
                     {...register("desiredConcentration")}
                   />
-                  <Select label="Unit" {...register("concentrationUnit")}>
+                  <Select label={t("calc.unit")} {...register("concentrationUnit")}>
                     <option value="mg/mL">mg/mL</option>
                     <option value="mcg/mL">mcg/mL</option>
                   </Select>
@@ -134,7 +133,7 @@ export default function CalculatorPage() {
                 )}
 
                 <Button type="submit" className="w-full">
-                  Calculate
+                  {t("calc.calculate")}
                 </Button>
               </form>
 
@@ -156,12 +155,12 @@ export default function CalculatorPage() {
                     {formatAmount(roundVolume(result.volumeMl))} mL
                   </p>
                   <p className="mt-1 text-sm text-muted">
-                    of bacteriostatic water to add to the vial.
+                    {t("calc.resultSuffix")}
                   </p>
 
                   <div className="mt-5 border-t border-tan-soft pt-4">
                     <p className="text-xs font-semibold text-muted mb-2">
-                      Volume to draw per dose at this concentration
+                      {t("calc.perDose")}
                     </p>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-sm">
                       {SYRINGE_DOSES_MG.map((doseMg) => (
@@ -187,7 +186,7 @@ export default function CalculatorPage() {
         </div>
 
         <Card className="h-fit">
-          <CardHeader title="Recent calculations" />
+          <CardHeader title={t("calc.recent")} />
           <CardBody className="space-y-2">
             {history && history.length > 0 ? (
               history.map((entry) => (
@@ -211,7 +210,7 @@ export default function CalculatorPage() {
             ) : (
               <EmptyState
                 icon={FlaskConical}
-                title="No calculations yet"
+                title={t("calc.noCalcs")}
                 className="py-8"
               />
             )}

@@ -3,6 +3,8 @@
 import { cn } from "@/lib/utils";
 import { rotationStatus } from "@/lib/data/injection-sites";
 import type { SiteUsageSummary } from "@/lib/types";
+import { useI18n } from "@/lib/i18n/context";
+import { siteName } from "@/lib/i18n/labels";
 
 interface MarkerPosition {
   view: "front" | "back";
@@ -71,13 +73,21 @@ export function InjectionSiteMap({
   onSelect?: (siteId: string) => void;
   className?: string;
 }) {
+  const { t } = useI18n();
+  const statusText = (status: "recent" | "used" | "unused") =>
+    status === "recent"
+      ? t("is.legendRecent")
+      : status === "used"
+      ? t("is.legendUsed")
+      : t("is.legendNotUsed");
+
   const renderView = (view: "front" | "back", label: string) => (
     <div className="flex flex-col items-center">
       <svg
         viewBox="0 0 140 320"
         className="w-full max-w-36"
         role="group"
-        aria-label={`${label} of body — injection sites`}
+        aria-label={`${label} — ${t("is.title")}`}
       >
         <BodySilhouette />
         {summaries.map((summary) => {
@@ -98,13 +108,7 @@ export function InjectionSiteMap({
                 onSelect && "cursor-pointer hover:opacity-80"
               )}
               role={onSelect ? "button" : undefined}
-              aria-label={`${summary.site.name} — ${
-                status === "recent"
-                  ? "used recently"
-                  : status === "used"
-                  ? "used"
-                  : "not used"
-              }`}
+              aria-label={`${siteName(t, summary.site)} — ${statusText(status)}`}
               tabIndex={onSelect ? 0 : undefined}
               onClick={onSelect ? () => onSelect(summary.site.id) : undefined}
               onKeyDown={
@@ -128,21 +132,21 @@ export function InjectionSiteMap({
   return (
     <div className={className}>
       <div className="grid grid-cols-2 gap-4">
-        {renderView("front", "Front")}
-        {renderView("back", "Back")}
+        {renderView("front", t("is.front"))}
+        {renderView("back", t("is.back"))}
       </div>
       <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-muted">
         <span className="flex items-center gap-1.5">
           <span className="size-2.5 rounded-full bg-ink inline-block" />
-          Used recently
+          {t("is.legendRecent")}
         </span>
         <span className="flex items-center gap-1.5">
           <span className="size-2.5 rounded-full bg-tan inline-block" />
-          Used
+          {t("is.legendUsed")}
         </span>
         <span className="flex items-center gap-1.5">
           <span className="size-2.5 rounded-full border border-line-strong bg-surface inline-block" />
-          Not used
+          {t("is.legendNotUsed")}
         </span>
       </div>
     </div>

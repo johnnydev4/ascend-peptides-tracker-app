@@ -1,15 +1,17 @@
 import { z } from "zod";
 
+// Messages are i18n keys; the Field components translate them at render time.
+
 export const calculatorSchema = z.object({
   vialQuantity: z.coerce
-    .number({ error: "Enter a number" })
-    .positive("Must be greater than zero")
-    .max(100000, "Value is too large"),
+    .number({ error: "val.number" })
+    .positive("val.positive")
+    .max(100000, "val.tooLarge"),
   vialUnit: z.enum(["mg", "mcg"]),
   desiredConcentration: z.coerce
-    .number({ error: "Enter a number" })
-    .positive("Must be greater than zero")
-    .max(100000, "Value is too large"),
+    .number({ error: "val.number" })
+    .positive("val.positive")
+    .max(100000, "val.tooLarge"),
   concentrationUnit: z.enum(["mg/mL", "mcg/mL"]),
 });
 

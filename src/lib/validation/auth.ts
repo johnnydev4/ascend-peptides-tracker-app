@@ -1,33 +1,35 @@
 import { z } from "zod";
 
+// Messages are i18n keys; the Field components translate them at render time.
+
 export const loginSchema = z.object({
-  email: z.string().email("Enter a valid email address"),
-  password: z.string().min(1, "Enter your password"),
+  email: z.string().email("val.emailInvalid"),
+  password: z.string().min(1, "val.passwordRequired"),
 });
 
 export const signupSchema = z
   .object({
-    displayName: z.string().min(1, "Enter your name").max(80),
-    email: z.string().email("Enter a valid email address"),
-    password: z.string().min(8, "Password must be at least 8 characters"),
+    displayName: z.string().min(1, "val.nameRequired").max(80),
+    email: z.string().email("val.emailInvalid"),
+    password: z.string().min(8, "val.passwordMin"),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords do not match",
+    message: "val.passwordsNoMatch",
     path: ["confirmPassword"],
   });
 
 export const forgotPasswordSchema = z.object({
-  email: z.string().email("Enter a valid email address"),
+  email: z.string().email("val.emailInvalid"),
 });
 
 export const resetPasswordSchema = z
   .object({
-    password: z.string().min(8, "Password must be at least 8 characters"),
+    password: z.string().min(8, "val.passwordMin"),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords do not match",
+    message: "val.passwordsNoMatch",
     path: ["confirmPassword"],
   });
 

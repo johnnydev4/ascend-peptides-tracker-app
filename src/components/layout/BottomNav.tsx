@@ -4,10 +4,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Plus, LayoutGrid } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/lib/i18n/context";
 import { NAV_ITEMS, MOBILE_NAV } from "./nav-items";
 
 export function BottomNav() {
   const pathname = usePathname();
+  const { t } = useI18n();
   const items = NAV_ITEMS.filter((i) => MOBILE_NAV.includes(i.href));
   const [first, second, third] = items;
 
@@ -28,13 +30,13 @@ export function BottomNav() {
         {[first, second].map((item) => (
           <Link key={item.href} href={item.href} className={linkClass(item.href)}>
             <item.icon className="size-5" strokeWidth={1.8} aria-hidden />
-            {item.label}
+            {t(item.label)}
           </Link>
         ))}
 
         <Link
           href="/record"
-          aria-label="Record a dose"
+          aria-label={t("nav.recordDose")}
           className="flex size-13 -mt-6 items-center justify-center rounded-full bg-ink text-cream shadow-raised transition-transform active:scale-95"
         >
           <Plus className="size-6" />
@@ -42,12 +44,12 @@ export function BottomNav() {
 
         <Link href={third.href} className={linkClass(third.href)}>
           <third.icon className="size-5" strokeWidth={1.8} aria-hidden />
-          {third.label}
+          {t(third.label)}
         </Link>
 
         <Link href="/more" className={linkClass("/more")}>
           <LayoutGrid className="size-5" strokeWidth={1.8} aria-hidden />
-          More
+          {t("nav.more")}
         </Link>
       </div>
     </nav>
