@@ -12,7 +12,7 @@ import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/context";
 
-const inputBase =
+export const inputBase =
   "w-full h-11 rounded-xl border border-line bg-surface px-3.5 text-[15px] text-ink placeholder:text-muted/70 transition-colors focus:border-tan focus:outline-none disabled:opacity-50";
 
 export function FieldWrapper({

@@ -200,6 +200,8 @@ const en: Dict = {
   // Treatment form
   "form.peptideName": "Peptide name",
   "form.peptideNamePh": "e.g. Retatrutide",
+  "form.peptideHint":
+    "Start typing — pick a suggestion to autofill and see reference info.",
   "form.vialQuantity": "Vial quantity",
   "form.vialUnit": "Vial unit",
   "form.doseAmount": "Dose amount",
@@ -219,6 +221,15 @@ const en: Dict = {
   "form.notesTreatmentPh": "Protocol details, supplier, batch, anything useful…",
   "form.schedulePreview":
     "This schedule generates {n} doses over {weeks} weeks.",
+
+  // Peptide reference
+  "peptide.reference": "Quick reference",
+  "peptide.function": "Function (reported online)",
+  "peptide.dose": "Dose (user-reported)",
+  "peptide.frequency": "Frequency",
+  "peptide.disclaimer":
+    "Anecdotal figures compiled from online user reports — not medical advice.",
+  "peptide.empty": "Type or pick a peptide to see reference info.",
 
   // Treatment detail
   "trd.editTreatment": "Edit treatment",
@@ -704,6 +715,8 @@ const es: Dict = {
   // Treatment form
   "form.peptideName": "Nombre del péptido",
   "form.peptideNamePh": "p. ej. Retatrutida",
+  "form.peptideHint":
+    "Empieza a escribir y elige una sugerencia para autocompletar y ver su información.",
   "form.vialQuantity": "Cantidad del vial",
   "form.vialUnit": "Unidad del vial",
   "form.doseAmount": "Cantidad de dosis",
@@ -724,6 +737,15 @@ const es: Dict = {
     "Detalles del protocolo, proveedor, lote, lo que te sea útil…",
   "form.schedulePreview":
     "Este calendario genera {n} dosis durante {weeks} semanas.",
+
+  // Peptide reference
+  "peptide.reference": "Referencia rápida",
+  "peptide.function": "Función (atribuida online)",
+  "peptide.dose": "Dosis (reportada por usuarios)",
+  "peptide.frequency": "Frecuencia",
+  "peptide.disclaimer":
+    "Cifras anecdóticas recopiladas de reportes de usuarios en internet. No es consejo médico.",
+  "peptide.empty": "Escribe o elige un péptido para ver su información de referencia.",
 
   // Treatment detail
   "trd.editTreatment": "Editar tratamiento",

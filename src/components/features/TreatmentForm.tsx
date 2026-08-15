@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
@@ -18,6 +18,11 @@ import { useI18n } from "@/lib/i18n/context";
 import { Button } from "@/components/ui/Button";
 import { Input, Select, Textarea, FieldWrapper } from "@/components/ui/Field";
 import { DateField, TimeField } from "@/components/ui/DateTimePicker";
+import {
+  PeptideNameField,
+  PeptideInfoPanel,
+} from "@/components/features/PeptideReference";
+import { findPeptide, type Peptide } from "@/lib/peptides";
 
 // Mon-first ordering of weekday values (0 = Sunday).
 const WEEKDAY_ORDER = [1, 2, 3, 4, 5, 6, 0];
@@ -54,13 +59,36 @@ export function TreatmentForm({
   treatment,
   onSubmit,
   submitLabel,
+  onPeptideChange,
 }: {
   treatment?: Treatment;
   onSubmit: (values: TreatmentInput) => Promise<void>;
   submitLabel: string;
+  /**
+   * Notified whenever the typed/selected peptide matches (or stops matching)
+   * the reference catalog. When provided, the parent is responsible for
+   * rendering the info panel (e.g. a desktop sidebar) and this form omits its
+   * own inline panel to avoid duplicating it.
+   */
+  onPeptideChange?: (peptide: Peptide | null) => void;
 }) {
   const { t } = useI18n();
   const [serverError, setServerError] = useState<string | null>(null);
+  const [selectedPeptide, setSelectedPeptide] = useState<Peptide | null>(() =>
+    findPeptide(treatment?.name ?? "")
+  );
+
+  const handlePeptideSelect = (peptide: Peptide | null) => {
+    setSelectedPeptide(peptide);
+    onPeptideChange?.(peptide);
+  };
+
+  // Surface any initial match (e.g. editing an existing treatment) to a parent
+  // that owns the info panel. Runs once on mount.
+  useEffect(() => {
+    onPeptideChange?.(selectedPeptide);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const {
     register,
@@ -109,12 +137,26 @@ export function TreatmentForm({
 
   return (
     <form onSubmit={handleSubmit(submit)} className="space-y-5" noValidate>
-      <Input
-        label={t("form.peptideName")}
-        placeholder={t("form.peptideNamePh")}
-        error={errors.name?.message}
-        {...register("name")}
+      <Controller
+        control={control}
+        name="name"
+        render={({ field }) => (
+          <PeptideNameField
+            label={t("form.peptideName")}
+            placeholder={t("form.peptideNamePh")}
+            hint={t("form.peptideHint")}
+            error={errors.name?.message}
+            value={field.value ?? ""}
+            onChange={field.onChange}
+            onBlur={field.onBlur}
+            onSelect={handlePeptideSelect}
+          />
+        )}
       />
+
+      {!onPeptideChange && selectedPeptide && (
+        <PeptideInfoPanel peptide={selectedPeptide} />
+      )}
 
       <div className="grid grid-cols-2 gap-3">
         <Input
