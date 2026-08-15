@@ -341,6 +341,8 @@ const en: Dict = {
     "Severe or concerning symptoms should be discussed with a qualified healthcare professional.",
   "se.saveRecord": "Save record",
   "se.deleteRecordAria": "Delete {name} record",
+  "se.editTitle": "Edit side effect",
+  "se.editRecordAria": "Edit {name} record",
 
   // Calculator
   "calc.title": "Reconstitution calculator",
@@ -938,6 +940,8 @@ const es: Dict = {
     "Los síntomas graves o preocupantes deben consultarse con un profesional sanitario cualificado.",
   "se.saveRecord": "Guardar registro",
   "se.deleteRecordAria": "Eliminar el registro de {name}",
+  "se.editTitle": "Editar efecto secundario",
+  "se.editRecordAria": "Editar el registro de {name}",
 
   // Calculator
   "calc.title": "Calculadora de reconstitución",

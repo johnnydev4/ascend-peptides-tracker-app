@@ -36,6 +36,26 @@ export async function createSideEffect(
   if (error) throw error;
 }
 
+export async function updateSideEffect(
+  supabase: SupabaseClient,
+  id: string,
+  input: SideEffectInput
+) {
+  const { error } = await supabase
+    .from("side_effects")
+    .update({
+      treatment_id: input.treatmentId || null,
+      dose_id: input.doseId || null,
+      name: input.name,
+      severity: input.severity,
+      started_at: new Date(input.startedAt).toISOString(),
+      ended_at: input.endedAt ? new Date(input.endedAt).toISOString() : null,
+      notes: input.notes || null,
+    })
+    .eq("id", id);
+  if (error) throw error;
+}
+
 export async function deleteSideEffect(supabase: SupabaseClient, id: string) {
   const { error } = await supabase.from("side_effects").delete().eq("id", id);
   if (error) throw error;

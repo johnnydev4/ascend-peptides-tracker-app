@@ -24,7 +24,7 @@ import {
   recommendNextSite,
 } from "@/lib/data/injection-sites";
 import { listSideEffects } from "@/lib/data/side-effects";
-import type { DoseWithRelations } from "@/lib/types";
+import type { DoseWithRelations, SideEffectWithTreatment } from "@/lib/types";
 import {
   formatAmount,
   formatCountdown,
@@ -62,6 +62,8 @@ export function DashboardClient({
   };
   const [recordOpen, setRecordOpen] = useState(false);
   const [sideEffectOpen, setSideEffectOpen] = useState(false);
+  const [sideEffectToEdit, setSideEffectToEdit] =
+    useState<SideEffectWithTreatment | null>(null);
   const [doseToRecord, setDoseToRecord] = useState<DoseWithRelations | null>(
     null
   );
@@ -326,7 +328,10 @@ export function DashboardClient({
             action={
               <button
                 type="button"
-                onClick={() => setSideEffectOpen(true)}
+                onClick={() => {
+                  setSideEffectToEdit(null);
+                  setSideEffectOpen(true);
+                }}
                 className="text-xs font-medium text-muted hover:text-ink transition-colors flex items-center gap-1"
               >
                 <Plus className="size-3" /> {t("common.record")}
@@ -336,7 +341,14 @@ export function DashboardClient({
           <CardBody className="space-y-2.5">
             {data.sideEffects.length > 0 ? (
               data.sideEffects.map((se) => (
-                <SideEffectCard key={se.id} sideEffect={se} />
+                <SideEffectCard
+                  key={se.id}
+                  sideEffect={se}
+                  onEdit={(record) => {
+                    setSideEffectToEdit(record);
+                    setSideEffectOpen(true);
+                  }}
+                />
               ))
             ) : (
               <EmptyState
@@ -382,10 +394,14 @@ export function DashboardClient({
       )}
       <SideEffectDialog
         open={sideEffectOpen}
-        onClose={() => setSideEffectOpen(false)}
+        onClose={() => {
+          setSideEffectOpen(false);
+          setSideEffectToEdit(null);
+        }}
         onSaved={refresh}
         userId={userId}
         treatments={data.treatments}
+        sideEffect={sideEffectToEdit}
       />
     </div>
   );

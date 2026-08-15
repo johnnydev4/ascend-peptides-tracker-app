@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useAsyncData } from "@/hooks/useAsyncData";
 import { useUser } from "@/hooks/useUser";
 import { listSideEffects, deleteSideEffect } from "@/lib/data/side-effects";
+import type { SideEffectWithTreatment } from "@/lib/types";
 import { listTreatments } from "@/lib/data/treatments";
 import { listDoses } from "@/lib/data/doses";
 import { formatDay, formatTime, toDate } from "@/lib/utils";
@@ -25,7 +26,13 @@ export default function SideEffectsPage() {
   const { user } = useUser();
   const { t } = useI18n();
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editing, setEditing] = useState<SideEffectWithTreatment | null>(null);
   const [toDelete, setToDelete] = useState<string | null>(null);
+
+  const closeDialog = () => {
+    setDialogOpen(false);
+    setEditing(null);
+  };
 
   const { data, loading, refresh } = useAsyncData(async () => {
     const supabase = createClient();
@@ -69,7 +76,12 @@ export default function SideEffectsPage() {
         title={t("se.title")}
         subtitle={t("se.subtitle")}
         action={
-          <Button onClick={() => setDialogOpen(true)}>
+          <Button
+            onClick={() => {
+              setEditing(null);
+              setDialogOpen(true);
+            }}
+          >
             <Plus className="size-4" /> {t("se.record")}
           </Button>
         }
@@ -89,6 +101,10 @@ export default function SideEffectsPage() {
                 <SideEffectCard
                   key={se.id}
                   sideEffect={se}
+                  onEdit={(record) => {
+                    setEditing(record);
+                    setDialogOpen(true);
+                  }}
                   onDelete={(id) => setToDelete(id)}
                 />
               ))
@@ -157,10 +173,11 @@ export default function SideEffectsPage() {
       {user && (
         <SideEffectDialog
           open={dialogOpen}
-          onClose={() => setDialogOpen(false)}
+          onClose={closeDialog}
           onSaved={refresh}
           userId={user.id}
           treatments={data.treatments}
+          sideEffect={editing}
         />
       )}
 

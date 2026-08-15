@@ -1,6 +1,6 @@
 "use client";
 
-import { Trash2 } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import type { SideEffectWithTreatment } from "@/lib/types";
 import { formatDateTime, cn } from "@/lib/utils";
 import { Badge, statusTone } from "@/components/ui/Badge";
@@ -9,10 +9,12 @@ import { severityLabel } from "@/lib/i18n/labels";
 
 export function SideEffectCard({
   sideEffect,
+  onEdit,
   onDelete,
   className,
 }: {
   sideEffect: SideEffectWithTreatment;
+  onEdit?: (sideEffect: SideEffectWithTreatment) => void;
   onDelete?: (id: string) => void;
   className?: string;
 }) {
@@ -43,15 +45,29 @@ export function SideEffectCard({
         )}
       </div>
 
-      {onDelete && (
-        <button
-          type="button"
-          onClick={() => onDelete(sideEffect.id)}
-          aria-label={t("se.deleteRecordAria", { name: sideEffect.name })}
-          className="rounded-lg p-2 text-muted hover:bg-terracotta-soft hover:text-terracotta transition-colors"
-        >
-          <Trash2 className="size-4" />
-        </button>
+      {(onEdit || onDelete) && (
+        <div className="flex shrink-0 items-center gap-1">
+          {onEdit && (
+            <button
+              type="button"
+              onClick={() => onEdit(sideEffect)}
+              aria-label={t("se.editRecordAria", { name: sideEffect.name })}
+              className="rounded-lg p-2 text-muted hover:bg-cream-deep hover:text-ink transition-colors"
+            >
+              <Pencil className="size-4" />
+            </button>
+          )}
+          {onDelete && (
+            <button
+              type="button"
+              onClick={() => onDelete(sideEffect.id)}
+              aria-label={t("se.deleteRecordAria", { name: sideEffect.name })}
+              className="rounded-lg p-2 text-muted hover:bg-terracotta-soft hover:text-terracotta transition-colors"
+            >
+              <Trash2 className="size-4" />
+            </button>
+          )}
+        </div>
       )}
     </div>
   );
