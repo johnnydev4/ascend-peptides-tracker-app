@@ -62,6 +62,73 @@ export function calculateReconstitution(
   };
 }
 
+/**
+ * Bacteriostatic water is ~99% water with 0.9% benzyl alcohol, so 1 g ≈ 1 mL.
+ * Good enough for a kitchen/jewellery scale, which is what this mode is for.
+ */
+export const BAC_WATER_G_PER_ML = 1;
+
+export interface WeightReconstitutionInput {
+  vialQuantity: number;
+  vialUnit: "mg" | "mcg";
+  /** Weight of the sealed, un-reconstituted vial. */
+  weightBefore: number;
+  /** Weight of the same vial right after the water went in. */
+  weightAfter: number;
+  weightUnit: "g" | "mg";
+}
+
+export interface WeightReconstitutionResult extends ReconstitutionResult {
+  /** Water that actually went into the vial, in grams. */
+  addedGrams: number;
+}
+
+/**
+ * Works out the *real* concentration of an already-mixed vial by weighing it
+ * before and after adding the water — the difference in weight is the water
+ * that actually went in, which is more honest than what the syringe said.
+ */
+export function calculateFromWeight(
+  input: WeightReconstitutionInput
+): WeightReconstitutionResult {
+  const { vialQuantity, vialUnit, weightBefore, weightAfter, weightUnit } = input;
+
+  // Error messages are i18n keys, translated by the caller at render time.
+  if (!Number.isFinite(vialQuantity) || vialQuantity <= 0) {
+    throw new CalculationError("calc.errZeroVial");
+  }
+  if (
+    !Number.isFinite(weightBefore) ||
+    !Number.isFinite(weightAfter) ||
+    weightBefore <= 0 ||
+    weightAfter <= 0
+  ) {
+    throw new CalculationError("calc.errZeroWeight");
+  }
+  if (weightAfter <= weightBefore) {
+    throw new CalculationError("calc.errWeightOrder");
+  }
+
+  const toGrams = (value: number) => (weightUnit === "mg" ? value / 1000 : value);
+  const addedGrams = toGrams(weightAfter) - toGrams(weightBefore);
+  const volumeMl = addedGrams / BAC_WATER_G_PER_ML;
+
+  const vialMg = vialUnit === "mcg" ? vialQuantity / 1000 : vialQuantity;
+  const concentrationMgPerMl = vialMg / volumeMl;
+
+  if (!Number.isFinite(concentrationMgPerMl) || concentrationMgPerMl <= 0) {
+    throw new CalculationError("calc.errInvalid");
+  }
+
+  return {
+    addedGrams,
+    volumeMl,
+    vialMg,
+    concentrationMgPerMl,
+    volumeForDoseMg: (doseMg: number) => doseMg / concentrationMgPerMl,
+  };
+}
+
 /** Round for display without losing meaningful precision. */
 export function roundVolume(value: number): number {
   if (value >= 100) return Math.round(value * 10) / 10;

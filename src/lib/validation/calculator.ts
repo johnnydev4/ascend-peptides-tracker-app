@@ -50,3 +50,32 @@ export type SyringeCalculatorInput = z.output<typeof syringeCalculatorSchema>;
 export type SyringeCalculatorFormValues = z.input<
   typeof syringeCalculatorSchema
 >;
+
+/**
+ * "The vial weighed X before and Y after" — derives the water that actually
+ * went in, and with it the real concentration.
+ */
+export const weightCalculatorSchema = z.object({
+  vialQuantity: z.coerce
+    .number({ error: "val.number" })
+    .positive("val.positive")
+    .max(100000, "val.tooLarge"),
+  vialUnit: z.enum(["mg", "mcg"]),
+  weightBefore: z.coerce
+    .number({ error: "val.number" })
+    .positive("val.positive")
+    .max(100000, "val.tooLarge"),
+  weightAfter: z.coerce
+    .number({ error: "val.number" })
+    .positive("val.positive")
+    .max(100000, "val.tooLarge"),
+  weightUnit: z.enum(["g", "mg"]),
+  /** Optional: shows the per-dose table in syringe units too. */
+  syringeType: z
+    .enum(SYRINGE_TYPES)
+    .optional()
+    .or(z.literal("").transform(() => undefined)),
+});
+
+export type WeightCalculatorInput = z.output<typeof weightCalculatorSchema>;
+export type WeightCalculatorFormValues = z.input<typeof weightCalculatorSchema>;

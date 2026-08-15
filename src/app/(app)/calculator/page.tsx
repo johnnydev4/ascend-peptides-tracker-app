@@ -3,15 +3,17 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { FlaskConical, Equal, Syringe, AlertTriangle } from "lucide-react";
+import { FlaskConical, Equal, Syringe, AlertTriangle, Scale } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useAsyncData } from "@/hooks/useAsyncData";
 import { useUser } from "@/hooks/useUser";
 import {
   calculateReconstitution,
+  calculateFromWeight,
   roundVolume,
   CalculationError,
   type ReconstitutionResult,
+  type WeightReconstitutionResult,
 } from "@/lib/calculations/reconstitution";
 import {
   calculateFromSyringeTarget,
@@ -24,10 +26,13 @@ import {
 import {
   calculatorSchema,
   syringeCalculatorSchema,
+  weightCalculatorSchema,
   type CalculatorInput,
   type CalculatorFormValues,
   type SyringeCalculatorInput,
   type SyringeCalculatorFormValues,
+  type WeightCalculatorInput,
+  type WeightCalculatorFormValues,
 } from "@/lib/validation/calculator";
 import { listCalculatorHistory, saveCalculation } from "@/lib/data/calculator";
 import { cn, formatAmount, formatDay } from "@/lib/utils";
@@ -40,11 +45,16 @@ import { useI18n } from "@/lib/i18n/context";
 
 const SYRINGE_DOSES_MG = [0.25, 0.5, 1, 2, 2.5];
 
-type Mode = "concentration" | "units";
+type Mode = "concentration" | "units" | "weight";
 
 type Outcome =
   | { mode: "concentration"; result: ReconstitutionResult; inputs: CalculatorInput }
-  | { mode: "units"; result: SyringeTargetResult; inputs: SyringeCalculatorInput };
+  | { mode: "units"; result: SyringeTargetResult; inputs: SyringeCalculatorInput }
+  | {
+      mode: "weight";
+      result: WeightReconstitutionResult;
+      inputs: WeightCalculatorInput;
+    };
 
 export default function CalculatorPage() {
   const { user } = useUser();
@@ -76,6 +86,18 @@ export default function CalculatorPage() {
       vialUnit: "mg",
       doseUnit: "mcg",
       syringeType: "U-100",
+    },
+  });
+
+  const weightForm = useForm<
+    WeightCalculatorFormValues,
+    unknown,
+    WeightCalculatorInput
+  >({
+    resolver: zodResolver(weightCalculatorSchema),
+    defaultValues: {
+      vialUnit: "mg",
+      weightUnit: "g",
     },
   });
 
@@ -144,6 +166,22 @@ export default function CalculatorPage() {
     }
   };
 
+  const onSubmitWeight = async (values: WeightCalculatorInput) => {
+    setCalcError(null);
+    try {
+      const result = calculateFromWeight(values);
+      setOutcome({ mode: "weight", result, inputs: values });
+      await persist(
+        result.concentrationMgPerMl,
+        result.volumeMl,
+        values.vialQuantity,
+        values.vialUnit
+      );
+    } catch (error) {
+      handleError(error);
+    }
+  };
+
   const switchMode = (next: Mode) => {
     setMode(next);
     setOutcome(null);
@@ -166,9 +204,9 @@ export default function CalculatorPage() {
               <div
                 role="tablist"
                 aria-label={t("calc.mode")}
-                className="mb-5 grid grid-cols-2 gap-1 rounded-xl bg-cream-deep p-1"
+                className="mb-5 grid grid-cols-3 gap-1 rounded-xl bg-cream-deep p-1"
               >
-                {(["concentration", "units"] as const).map((m) => (
+                {(["concentration", "units", "weight"] as const).map((m) => (
                   <button
                     key={m}
                     type="button"
@@ -176,7 +214,7 @@ export default function CalculatorPage() {
                     aria-selected={mode === m}
                     onClick={() => switchMode(m)}
                     className={cn(
-                      "rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                      "rounded-lg px-2 py-2 text-[13px] font-medium transition-colors",
                       mode === m
                         ? "bg-surface text-ink shadow-sm"
                         : "text-muted hover:text-ink"
@@ -184,7 +222,9 @@ export default function CalculatorPage() {
                   >
                     {m === "concentration"
                       ? t("calc.modeConcentration")
-                      : t("calc.modeUnits")}
+                      : m === "units"
+                      ? t("calc.modeUnits")
+                      : t("calc.modeWeight")}
                   </button>
                 ))}
               </div>
@@ -257,7 +297,7 @@ export default function CalculatorPage() {
                     {t("calc.calculate")}
                   </Button>
                 </form>
-              ) : (
+              ) : mode === "units" ? (
                 <form
                   onSubmit={unitsForm.handleSubmit(onSubmitUnits)}
                   className="space-y-4"
@@ -338,6 +378,90 @@ export default function CalculatorPage() {
                     {t("calc.calculate")}
                   </Button>
                 </form>
+              ) : (
+                <form
+                  onSubmit={weightForm.handleSubmit(onSubmitWeight)}
+                  className="space-y-4"
+                  noValidate
+                >
+                  <p className="text-sm text-muted leading-relaxed">
+                    {t("calc.weightIntro")}
+                  </p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <Input
+                      label={t("calc.vialQuantity")}
+                      type="number"
+                      step="any"
+                      inputMode="decimal"
+                      placeholder="10"
+                      error={weightForm.formState.errors.vialQuantity?.message}
+                      {...weightForm.register("vialQuantity")}
+                    />
+                    <Select
+                      label={t("calc.unit")}
+                      {...weightForm.register("vialUnit")}
+                    >
+                      <option value="mg">mg</option>
+                      <option value="mcg">mcg</option>
+                    </Select>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <Input
+                      label={t("calc.weightBefore")}
+                      type="number"
+                      step="any"
+                      inputMode="decimal"
+                      placeholder="12.35"
+                      error={weightForm.formState.errors.weightBefore?.message}
+                      {...weightForm.register("weightBefore")}
+                    />
+                    <Input
+                      label={t("calc.weightAfter")}
+                      type="number"
+                      step="any"
+                      inputMode="decimal"
+                      placeholder="14.35"
+                      error={weightForm.formState.errors.weightAfter?.message}
+                      {...weightForm.register("weightAfter")}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <Select
+                      label={t("calc.weightUnit")}
+                      {...weightForm.register("weightUnit")}
+                    >
+                      <option value="g">g</option>
+                      <option value="mg">mg</option>
+                    </Select>
+                    <Select
+                      label={`${t("calc.syringeType")} ${t("common.optional")}`}
+                      {...weightForm.register("syringeType")}
+                    >
+                      <option value="">{t("calc.noSyringe")}</option>
+                      {SYRINGE_TYPES.map((type) => (
+                        <option key={type} value={type}>
+                          {type} ({SYRINGE_UNITS_PER_ML[type]} u/mL)
+                        </option>
+                      ))}
+                    </Select>
+                  </div>
+
+                  <p className="text-xs text-muted leading-relaxed">
+                    {t("calc.weightNote")}
+                  </p>
+
+                  {calcError && (
+                    <p role="alert" className="text-sm text-terracotta">
+                      {calcError}
+                    </p>
+                  )}
+
+                  <Button type="submit" className="w-full">
+                    {t("calc.calculate")}
+                  </Button>
+                </form>
               )}
 
               {outcome && (
@@ -355,7 +479,7 @@ export default function CalculatorPage() {
                       </span>
                       <Equal className="size-4" />
                     </div>
-                  ) : (
+                  ) : outcome.mode === "units" ? (
                     <div className="flex items-center gap-2 text-sm text-muted">
                       <Syringe className="size-4" />
                       <span>
@@ -366,14 +490,68 @@ export default function CalculatorPage() {
                         })}
                       </span>
                     </div>
+                  ) : (
+                    <div className="flex items-center gap-2 text-sm text-muted">
+                      <Scale className="size-4" />
+                      <span>
+                        {t("calc.weightRecap", {
+                          after: `${formatAmount(outcome.inputs.weightAfter)} ${outcome.inputs.weightUnit}`,
+                          before: `${formatAmount(outcome.inputs.weightBefore)} ${outcome.inputs.weightUnit}`,
+                          added: `${formatAmount(
+                            roundVolume(outcome.result.addedGrams)
+                          )} g`,
+                        })}
+                      </span>
+                    </div>
                   )}
 
-                  <p className="mt-2 text-3xl font-semibold tracking-tight text-ink">
-                    {formatAmount(roundVolume(outcome.result.volumeMl))} mL
-                  </p>
-                  <p className="mt-1 text-sm text-muted">
-                    {t("calc.resultSuffix")}
-                  </p>
+                  {outcome.mode === "weight" ? (
+                    <>
+                      <p className="mt-2 text-3xl font-semibold tracking-tight text-ink">
+                        {formatAmount(
+                          roundVolume(outcome.result.concentrationMgPerMl)
+                        )}{" "}
+                        mg/mL
+                      </p>
+                      <p className="mt-1 text-sm text-muted">
+                        {t("calc.realConcentration")}
+                      </p>
+                      <div className="mt-4 grid gap-2 sm:grid-cols-3 text-sm">
+                        <Stat
+                          label={t("calc.waterAdded")}
+                          value={`${formatAmount(
+                            roundVolume(outcome.result.volumeMl)
+                          )} mL`}
+                        />
+                        <Stat
+                          label={t("calc.perMcgMl")}
+                          value={`${formatAmount(
+                            roundVolume(outcome.result.concentrationMgPerMl * 1000)
+                          )} mcg/mL`}
+                        />
+                        {outcome.inputs.syringeType && (
+                          <Stat
+                            label={t("calc.perUnit")}
+                            value={`${formatAmount(
+                              roundVolume(
+                                (outcome.result.concentrationMgPerMl * 1000) /
+                                  SYRINGE_UNITS_PER_ML[outcome.inputs.syringeType]
+                              )
+                            )} mcg`}
+                          />
+                        )}
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <p className="mt-2 text-3xl font-semibold tracking-tight text-ink">
+                        {formatAmount(roundVolume(outcome.result.volumeMl))} mL
+                      </p>
+                      <p className="mt-1 text-sm text-muted">
+                        {t("calc.resultSuffix")}
+                      </p>
+                    </>
+                  )}
 
                   {outcome.mode === "units" && (
                     <>

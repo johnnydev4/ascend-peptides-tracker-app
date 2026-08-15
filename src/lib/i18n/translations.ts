@@ -382,6 +382,21 @@ const en: Dict = {
     "Save these numbers on the treatment (BAC water, syringe, expiry) so they stay recorded.",
   "calc.errZeroDose": "The dose must be greater than zero.",
   "calc.errZeroUnits": "The units must be greater than zero.",
+  "calc.modeWeight": "By vial weight",
+  "calc.weightIntro":
+    "Weigh the vial before and after adding the water: the difference is the water that actually went in, which gives the vial's real concentration.",
+  "calc.weightBefore": "Weight before (dry vial)",
+  "calc.weightAfter": "Weight after (reconstituted)",
+  "calc.weightUnit": "Weight unit",
+  "calc.weightNote":
+    "Bacteriostatic water weighs about 1 g per mL. Use a scale with 0.01 g precision and weigh the vial with its cap on both times.",
+  "calc.weightRecap": "{after} − {before} = {added} of water",
+  "calc.realConcentration": "Actual concentration of the vial.",
+  "calc.waterAdded": "Water added",
+  "calc.perMcgMl": "In mcg",
+  "calc.errZeroWeight": "Both weights must be greater than zero.",
+  "calc.errWeightOrder":
+    "The weight after reconstituting must be greater than the weight before.",
 
   // Reconstitution on a treatment
   "recon.section": "Reconstitution",
@@ -954,6 +969,21 @@ const es: Dict = {
     "Guarda estos datos en el tratamiento (agua bacteriostática, jeringa, caducidad) para que queden registrados.",
   "calc.errZeroDose": "La dosis debe ser mayor que cero.",
   "calc.errZeroUnits": "Las unidades deben ser mayores que cero.",
+  "calc.modeWeight": "Por peso del vial",
+  "calc.weightIntro":
+    "Pesa el vial antes y después de añadir el agua: la diferencia es el agua que realmente entró, y con eso sale la concentración real del vial.",
+  "calc.weightBefore": "Peso antes (sin reconstituir)",
+  "calc.weightAfter": "Peso después (reconstituido)",
+  "calc.weightUnit": "Unidad de peso",
+  "calc.weightNote":
+    "El agua bacteriostática pesa aproximadamente 1 g por mL. Usa una báscula con precisión de 0.01 g y pesa el vial con su tapa las dos veces.",
+  "calc.weightRecap": "{after} − {before} = {added} de agua",
+  "calc.realConcentration": "Concentración real del vial.",
+  "calc.waterAdded": "Agua añadida",
+  "calc.perMcgMl": "En mcg",
+  "calc.errZeroWeight": "Ambos pesos deben ser mayores que cero.",
+  "calc.errWeightOrder":
+    "El peso después de reconstituir debe ser mayor que el peso antes.",
 
   // Reconstitución en el tratamiento
   "recon.section": "Reconstitución",
