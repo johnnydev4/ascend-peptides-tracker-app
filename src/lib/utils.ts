@@ -1,6 +1,14 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { format, isToday, isTomorrow, isYesterday, parseISO } from "date-fns";
+import {
+  addDays,
+  endOfDay,
+  format,
+  isToday,
+  isTomorrow,
+  isYesterday,
+  parseISO,
+} from "date-fns";
 import { es, enUS, type Locale as DateFnsLocale } from "date-fns/locale";
 
 export function cn(...inputs: ClassValue[]) {
@@ -30,6 +38,11 @@ function fmt(date: Date, pattern: string): string {
 
 export function toDate(value: string | Date): Date {
   return typeof value === "string" ? parseISO(value) : value;
+}
+
+/** Locale-aware formatting for arbitrary date-fns patterns (uses the current app locale). */
+export function formatWith(value: string | Date, pattern: string): string {
+  return fmt(toDate(value), pattern);
 }
 
 export function formatDay(value: string | Date): string {
@@ -72,6 +85,19 @@ export function formatAmount(value: number): string {
   return Number.isInteger(value)
     ? String(value)
     : String(parseFloat(value.toFixed(4)));
+}
+
+/**
+ * Whether a scheduled dose may be marked completed yet. A dose can only be
+ * recorded once its day has (nearly) arrived — today or tomorrow — so future
+ * doses whose day hasn't come are not completable.
+ */
+export function isDoseCompletable(
+  scheduledAt: string | Date,
+  now: Date = new Date()
+): boolean {
+  const limit = endOfDay(addDays(now, 1)); // end of tomorrow
+  return toDate(scheduledAt).getTime() <= limit.getTime();
 }
 
 /** Human-readable countdown between now and a future date. */

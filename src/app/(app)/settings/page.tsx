@@ -19,6 +19,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input, Select } from "@/components/ui/Field";
+import { MeasurementReminderCard } from "@/components/features/MeasurementReminderCard";
 import { useI18n } from "@/lib/i18n/context";
 import { LOCALES, LOCALE_LABELS, type Locale } from "@/lib/i18n/config";
 
@@ -183,6 +184,8 @@ export default function SettingsPage() {
             )}
           </CardBody>
         </Card>
+
+        <MeasurementReminderCard />
 
         <Card>
           <CardHeader title={t("set.app")} />

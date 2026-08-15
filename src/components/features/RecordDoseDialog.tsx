@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 import { createClient } from "@/lib/supabase/client";
@@ -20,6 +20,7 @@ import { siteName } from "@/lib/i18n/labels";
 import { Dialog } from "@/components/ui/Dialog";
 import { Button } from "@/components/ui/Button";
 import { Input, Select, Textarea } from "@/components/ui/Field";
+import { DateTimeField } from "@/components/ui/DateTimePicker";
 import { InjectionSiteMap } from "./InjectionSiteMap";
 
 export function RecordDoseDialog({
@@ -46,6 +47,7 @@ export function RecordDoseDialog({
     handleSubmit,
     setValue,
     watch,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<RecordDoseFormValues, unknown, RecordDoseInput>({
     resolver: zodResolver(recordDoseSchema),
@@ -106,11 +108,17 @@ export function RecordDoseDialog({
           </Select>
         </div>
 
-        <Input
-          label={t("rdd.administeredAt")}
-          type="datetime-local"
-          error={errors.administeredAt?.message}
-          {...register("administeredAt")}
+        <Controller
+          control={control}
+          name="administeredAt"
+          render={({ field }) => (
+            <DateTimeField
+              label={t("rdd.administeredAt")}
+              value={field.value ?? ""}
+              onChange={field.onChange}
+              error={errors.administeredAt?.message}
+            />
+          )}
         />
 
         <div>

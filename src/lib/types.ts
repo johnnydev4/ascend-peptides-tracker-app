@@ -97,6 +97,45 @@ export interface CalculatorHistoryEntry {
   created_at: string;
 }
 
+export type WeightUnit = "kg" | "lb";
+export type LengthUnit = "cm" | "in";
+
+export interface BodyMeasurement {
+  id: string;
+  user_id: string;
+  measured_at: string; // ISO date (yyyy-MM-dd)
+  weight: number | null;
+  weight_unit: WeightUnit;
+  body_fat: number | null; // %
+  muscle_mass: number | null; // in weight_unit
+  length_unit: LengthUnit;
+  neck: number | null;
+  chest: number | null;
+  waist: number | null;
+  hips: number | null;
+  arms: number | null;
+  thighs: number | null;
+  notes: string | null;
+  photos: string[]; // data URLs
+  created_at: string;
+  updated_at: string;
+}
+
+/** The numeric metrics a measurement can chart, in a stable order. */
+export const MEASUREMENT_METRICS = [
+  "weight",
+  "body_fat",
+  "muscle_mass",
+  "neck",
+  "chest",
+  "waist",
+  "hips",
+  "arms",
+  "thighs",
+] as const;
+
+export type MeasurementMetric = (typeof MEASUREMENT_METRICS)[number];
+
 export interface SiteUsageSummary {
   site: InjectionSite;
   injectionCount: number;

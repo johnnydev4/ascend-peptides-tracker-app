@@ -13,7 +13,8 @@ import { toDate } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/context";
 import { Dialog } from "@/components/ui/Dialog";
 import { Button } from "@/components/ui/Button";
-import { Input, Textarea } from "@/components/ui/Field";
+import { Textarea } from "@/components/ui/Field";
+import { DateTimeField } from "@/components/ui/DateTimePicker";
 
 /** Edit a single scheduled event: time, notes, or status. */
 export function EditDoseDialog({
@@ -67,11 +68,10 @@ export function EditDoseDialog({
       className="sm:max-w-md"
     >
       <div className="space-y-4">
-        <Input
+        <DateTimeField
           label={t("edd.scheduledFor")}
-          type="datetime-local"
           value={scheduledAt}
-          onChange={(e) => setScheduledAt(e.target.value)}
+          onChange={setScheduledAt}
         />
         <Textarea
           label={t("form.notes")}

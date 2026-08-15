@@ -171,6 +171,33 @@ export function buildSeedDatabase(): Database {
     },
   ];
 
+  // A few body measurements over the last three weeks, weight trending down.
+  const body_measurements: Row[] = [
+    { day: 21, weight: 88.4, fat: 27, muscle: 34.1, waist: 96 },
+    { day: 14, weight: 87.1, fat: 26.2, muscle: 34.3, waist: 94.5 },
+    { day: 7, weight: 85.9, fat: 25.4, muscle: 34.6, waist: 93 },
+    { day: 1, weight: 84.8, fat: 24.7, muscle: 34.8, waist: 91.5 },
+  ].map((m) => ({
+    id: uuid(),
+    user_id: userId,
+    measured_at: format(subDays(now, m.day), "yyyy-MM-dd"),
+    weight: m.weight,
+    weight_unit: "kg",
+    body_fat: m.fat,
+    muscle_mass: m.muscle,
+    length_unit: "cm",
+    neck: null,
+    chest: null,
+    waist: m.waist,
+    hips: null,
+    arms: null,
+    thighs: null,
+    notes: null,
+    photos: [],
+    created_at: nowIso,
+    updated_at: nowIso,
+  }));
+
   return {
     profiles,
     treatments: [treatment],
@@ -179,5 +206,6 @@ export function buildSeedDatabase(): Database {
     injection_site_usage,
     side_effects,
     calculator_history,
+    body_measurements,
   };
 }

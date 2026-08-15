@@ -1,8 +1,8 @@
 "use client";
 
-import { Check, Pencil } from "lucide-react";
+import { Check, Lock, Pencil } from "lucide-react";
 import type { DoseWithRelations } from "@/lib/types";
-import { formatAmount, formatDateTime, cn } from "@/lib/utils";
+import { formatAmount, formatDateTime, isDoseCompletable, cn } from "@/lib/utils";
 import { Badge, statusTone } from "@/components/ui/Badge";
 import { useI18n } from "@/lib/i18n/context";
 import { statusLabel, siteName } from "@/lib/i18n/labels";
@@ -21,6 +21,7 @@ export function DoseCard({
   const { t } = useI18n();
   const amount = dose.dose_amount ?? dose.treatment?.dose_amount;
   const unit = dose.dose_unit ?? dose.treatment?.dose_unit ?? "";
+  const completable = isDoseCompletable(dose.scheduled_at);
 
   return (
     <div
@@ -57,7 +58,7 @@ export function DoseCard({
         </button>
       )}
 
-      {onComplete && dose.status === "scheduled" && (
+      {onComplete && dose.status === "scheduled" && completable && (
         <button
           type="button"
           onClick={() => onComplete(dose)}
@@ -66,6 +67,16 @@ export function DoseCard({
         >
           <Check className="size-4" />
         </button>
+      )}
+
+      {onComplete && dose.status === "scheduled" && !completable && (
+        <span
+          aria-label={t("dose.notYetAvailable")}
+          title={t("dose.notYetAvailable")}
+          className="flex size-9 items-center justify-center rounded-full border border-dashed border-line text-muted/50"
+        >
+          <Lock className="size-3.5" />
+        </span>
       )}
     </div>
   );

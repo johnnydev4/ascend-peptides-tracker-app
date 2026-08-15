@@ -30,6 +30,7 @@ import {
   formatCountdown,
   formatDateTime,
   formatFullDate,
+  isDoseCompletable,
 } from "@/lib/utils";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -88,7 +89,8 @@ export function DashboardClient({
           status: "scheduled",
           from: new Date().toISOString(),
           limit: 4,
-        }).then((doses) => [...doses].reverse()),
+          ascending: true,
+        }),
       ]);
     return { nextDose, treatments, allDoses, siteSummaries, sideEffects, upcoming };
   }, [userId]);
@@ -184,14 +186,20 @@ export function DashboardClient({
                     · {formatCountdown(data.nextDose.scheduled_at)}
                   </p>
                 </div>
-                <Button
-                  onClick={() => {
-                    setDoseToRecord(data.nextDose);
-                    setRecordOpen(true);
-                  }}
-                >
-                  {t("dash.markCompleted")}
-                </Button>
+                {isDoseCompletable(data.nextDose.scheduled_at) ? (
+                  <Button
+                    onClick={() => {
+                      setDoseToRecord(data.nextDose);
+                      setRecordOpen(true);
+                    }}
+                  >
+                    {t("dash.markCompleted")}
+                  </Button>
+                ) : (
+                  <p className="text-xs text-muted max-w-40 text-right">
+                    {t("dose.notYetAvailable")}
+                  </p>
+                )}
               </div>
             ) : (
               <p className="text-sm text-muted py-2">

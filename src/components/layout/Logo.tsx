@@ -27,8 +27,9 @@ export function Wordmark({ className }: { className?: string }) {
   return (
     <span className={cn("flex items-center gap-2.5", className)}>
       <Logo />
+      {/* Previous product name kept for reference: "Peptide Tracker" */}
       <span className="text-[15px] font-semibold leading-tight tracking-tight text-ink">
-        Peptide
+        Ascend
         <br />
         Tracker
       </span>

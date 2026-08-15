@@ -17,6 +17,7 @@ import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/context";
 import { Button } from "@/components/ui/Button";
 import { Input, Select, Textarea, FieldWrapper } from "@/components/ui/Field";
+import { DateField, TimeField } from "@/components/ui/DateTimePicker";
 
 // Mon-first ordering of weekday values (0 = Sunday).
 const WEEKDAY_ORDER = [1, 2, 3, 4, 5, 6, 0];
@@ -154,11 +155,17 @@ export function TreatmentForm({
       </div>
 
       <div className="grid grid-cols-2 gap-3">
-        <Input
-          label={t("form.startDate")}
-          type="date"
-          error={errors.startDate?.message}
-          {...register("startDate")}
+        <Controller
+          control={control}
+          name="startDate"
+          render={({ field }) => (
+            <DateField
+              label={t("form.startDate")}
+              value={field.value ?? ""}
+              onChange={field.onChange}
+              error={errors.startDate?.message}
+            />
+          )}
         />
         <Input
           label={t("form.durationWeeks")}
@@ -179,11 +186,17 @@ export function TreatmentForm({
           <option value="every_n_days">{t("form.freqEveryN")}</option>
           <option value="weekly_days">{t("form.freqWeekdays")}</option>
         </Select>
-        <Input
-          label={t("form.time")}
-          type="time"
-          error={errors.scheduledTime?.message}
-          {...register("scheduledTime")}
+        <Controller
+          control={control}
+          name="scheduledTime"
+          render={({ field }) => (
+            <TimeField
+              label={t("form.time")}
+              value={field.value ?? ""}
+              onChange={field.onChange}
+              error={errors.scheduledTime?.message}
+            />
+          )}
         />
       </div>
 

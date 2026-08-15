@@ -2,8 +2,9 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Peptide Tracker",
-    short_name: "Peptides",
+    // Previous name kept for reference: name "Peptide Tracker", short_name "Peptides"
+    name: "Ascend Tracker",
+    short_name: "Ascend",
     description:
       "A calm, private tracker for organizing peptide treatment protocols, doses, injection sites, and progress.",
     start_url: "/dashboard",

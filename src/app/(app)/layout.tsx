@@ -5,6 +5,7 @@ import { Sidebar } from "@/components/layout/Sidebar";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { Logo } from "@/components/layout/Logo";
 import { DoseReminderScheduler } from "@/components/pwa/DoseReminderScheduler";
+import { MeasurementReminderScheduler } from "@/components/pwa/MeasurementReminderScheduler";
 
 export default async function AppLayout({
   children,
@@ -39,7 +40,7 @@ export default async function AppLayout({
           <Link href="/dashboard" aria-label="Dashboard">
             <Logo />
           </Link>
-          <span className="text-sm font-semibold text-ink">Peptide Tracker</span>
+          <span className="text-sm font-semibold text-ink">Ascend Tracker</span>
           <span className="w-7" aria-hidden />
         </header>
 
@@ -50,6 +51,7 @@ export default async function AppLayout({
 
       <BottomNav />
       <DoseReminderScheduler />
+      <MeasurementReminderScheduler />
     </div>
   );
 }

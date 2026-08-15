@@ -54,3 +54,61 @@ export async function requestPermission(): Promise<boolean> {
   const result = await Notification.requestPermission();
   return result === "granted";
 }
+
+// --- Measurement (weigh-in) reminders --------------------------------------
+// Also device-local: remind the user to weigh in and take measurements every
+// N days at a chosen time. "lastPromptedAt" tracks the day we last nudged so a
+// single open session doesn't fire repeatedly.
+
+export interface MeasurementReminderPreferences {
+  enabled: boolean;
+  /** Reminder cadence in days. */
+  everyDays: number;
+  /** Time of day to remind, "HH:mm". */
+  time: string;
+  /** ISO date (yyyy-MM-dd) we last showed the reminder for. */
+  lastPromptedDate: string | null;
+}
+
+const MEASUREMENT_KEY = "peptide-tracker:measurement-reminders";
+
+export const DEFAULT_MEASUREMENT_PREFERENCES: MeasurementReminderPreferences = {
+  enabled: false,
+  everyDays: 7,
+  time: "08:00",
+  lastPromptedDate: null,
+};
+
+export function getMeasurementPreferences(): MeasurementReminderPreferences {
+  if (typeof window === "undefined") return DEFAULT_MEASUREMENT_PREFERENCES;
+  try {
+    const raw = window.localStorage.getItem(MEASUREMENT_KEY);
+    if (!raw) return DEFAULT_MEASUREMENT_PREFERENCES;
+    const parsed = JSON.parse(raw) as Partial<MeasurementReminderPreferences>;
+    return {
+      enabled: !!parsed.enabled,
+      everyDays:
+        typeof parsed.everyDays === "number" &&
+        parsed.everyDays >= 1 &&
+        parsed.everyDays <= 90
+          ? parsed.everyDays
+          : DEFAULT_MEASUREMENT_PREFERENCES.everyDays,
+      time:
+        typeof parsed.time === "string" && /^\d{2}:\d{2}$/.test(parsed.time)
+          ? parsed.time
+          : DEFAULT_MEASUREMENT_PREFERENCES.time,
+      lastPromptedDate:
+        typeof parsed.lastPromptedDate === "string"
+          ? parsed.lastPromptedDate
+          : null,
+    };
+  } catch {
+    return DEFAULT_MEASUREMENT_PREFERENCES;
+  }
+}
+
+export function saveMeasurementPreferences(
+  prefs: MeasurementReminderPreferences
+): void {
+  window.localStorage.setItem(MEASUREMENT_KEY, JSON.stringify(prefs));
+}
