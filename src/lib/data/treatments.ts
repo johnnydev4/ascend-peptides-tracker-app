@@ -12,6 +12,20 @@ export async function listTreatments(supabase: SupabaseClient) {
   return (data ?? []) as Treatment[];
 }
 
+/**
+ * Treatments whose vial has a recorded expiry date, soonest first. Archived
+ * treatments are left out; filtering happens client-side so the (small) result
+ * works the same in demo mode.
+ */
+export async function listVialExpirations(supabase: SupabaseClient) {
+  const treatments = await listTreatments(supabase);
+  return treatments
+    .filter((t) => !!t.vial_expires_at && t.status !== "archived")
+    .sort((a, b) =>
+      (a.vial_expires_at as string) < (b.vial_expires_at as string) ? -1 : 1
+    );
+}
+
 export async function getTreatment(supabase: SupabaseClient, id: string) {
   const { data, error } = await supabase
     .from("treatments")
@@ -48,6 +62,7 @@ export async function createTreatment(
       scheduled_time: input.scheduledTime,
       dose_amount: input.doseAmount,
       dose_unit: input.doseUnit,
+      ...reconstitutionColumns(input),
       notes: input.notes || null,
       status: "active",
     })
@@ -90,6 +105,7 @@ export async function updateTreatment(
       scheduled_time: input.scheduledTime,
       dose_amount: input.doseAmount,
       dose_unit: input.doseUnit,
+      ...reconstitutionColumns(input),
       notes: input.notes || null,
     })
     .eq("id", id)
@@ -139,6 +155,19 @@ export async function setTreatmentStatus(
 export async function deleteTreatment(supabase: SupabaseClient, id: string) {
   const { error } = await supabase.from("treatments").delete().eq("id", id);
   if (error) throw error;
+}
+
+/**
+ * Reconstitution details are optional everywhere; empty strings from the form
+ * become nulls so the date columns stay valid.
+ */
+function reconstitutionColumns(input: TreatmentInput) {
+  return {
+    bac_water_ml: input.bacWaterMl ?? null,
+    syringe_type: input.syringeType || null,
+    reconstituted_at: input.reconstitutedAt || null,
+    vial_expires_at: input.vialExpiresAt || null,
+  };
 }
 
 /** Local calendar-day key (yyyy-M-d) used to dedupe doses by day. */

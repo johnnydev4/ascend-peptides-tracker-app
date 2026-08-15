@@ -28,6 +28,12 @@ export interface Treatment {
   dose_unit: string;
   notes: string | null;
   status: TreatmentStatus;
+  /** mL of bacteriostatic water the vial was reconstituted with. */
+  bac_water_ml: number | null;
+  /** Insulin syringe used to draw doses ("U-100" | "U-40" | "U-500"). */
+  syringe_type: string | null;
+  reconstituted_at: string | null; // ISO date (yyyy-MM-dd)
+  vial_expires_at: string | null; // ISO date (yyyy-MM-dd)
   created_at: string;
   updated_at: string;
 }

@@ -361,6 +361,57 @@ const en: Dict = {
   "calc.errTooLarge":
     "The resulting volume exceeds 1000 mL — check the concentration.",
   "calc.errGeneric": "Could not calculate with those values.",
+  "calc.mode": "Calculation mode",
+  "calc.modeConcentration": "By concentration",
+  "calc.modeUnits": "By syringe units",
+  "calc.syringeType": "Syringe type",
+  "calc.syringeTypeHint": "U-100 = 100 units per mL (the usual insulin syringe).",
+  "calc.noSyringe": "Don't show units",
+  "calc.unitsIntro":
+    "Tell me the dose you want and which mark it should land on — this works out how much BAC water to reconstitute with.",
+  "calc.iWantDose": "I want this dose",
+  "calc.toEqualUnits": "to equal",
+  "calc.targetRecap": "{dose} = {units} u on a {syringe} syringe",
+  "calc.concentration": "Concentration",
+  "calc.perUnit": "Per unit",
+  "calc.dosesPerVial": "Doses per vial",
+  "calc.exceedsBarrel":
+    "That dose is over 1 mL, so it will not fit in a single insulin syringe. Use fewer units or a smaller dose.",
+  "calc.suggestedBarrel": "Fits a {ml} mL syringe ({units} u full scale).",
+  "calc.saveHint":
+    "Save these numbers on the treatment (BAC water, syringe, expiry) so they stay recorded.",
+  "calc.errZeroDose": "The dose must be greater than zero.",
+  "calc.errZeroUnits": "The units must be greater than zero.",
+
+  // Reconstitution on a treatment
+  "recon.section": "Reconstitution",
+  "recon.hint":
+    "Optional: record how this vial was mixed so the concentration and dose in syringe units are always at hand.",
+  "recon.bacWater": "BAC water added",
+  "recon.syringe": "Syringe",
+  "recon.noSyringe": "Not specified",
+  "recon.reconstitutedAt": "Reconstituted on",
+  "recon.expiresAt": "Vial expires on",
+  "recon.suggestExpiry": "Use +{days} days",
+  "recon.concentration": "Concentration: {value} mg/mL",
+  "recon.doseEquals": "Your dose of {dose} = {units} u on a {syringe} syringe",
+  "recon.doseInUnits": "Dose in units",
+
+  // Vial expiry
+  "vial.expiresLabel": "Vial expiry",
+  "vial.expiresOn": "{name} — vial expires",
+  "vial.expiresToday": "Expires today",
+  "vial.expiresInDays": "In {days} days",
+  "vial.expiredAgo": "Expired {days} days ago",
+  "vial.reminderTitle": "Vial expiry reminders",
+  "vial.reminderToggle": "Warn me before a vial expires",
+  "vial.reminderWarn": "Warn me",
+  "vial.warnSameDay": "On the expiry day",
+  "vial.warnDays": "{days} days before",
+  "vial.notifTitle": "Vial expiry",
+  "vial.notifSoon": "{name}: the vial expires in {days} days.",
+  "vial.notifToday": "{name}: the vial expires today.",
+  "vial.notifExpired": "{name}: the vial has expired.",
 
   // History
   "hist.title": "History",
@@ -513,6 +564,8 @@ const en: Dict = {
   "val.chooseSideEffect": "Enter or choose a side effect",
   "val.chooseStart": "Choose when it started",
   "val.endAfterStart": "End must be after start",
+  "val.expiryBeforeRecon":
+    "The expiry date must come after the reconstitution date",
 };
 
 const es: Dict = {
@@ -879,6 +932,58 @@ const es: Dict = {
   "calc.errTooLarge":
     "El volumen resultante supera los 1000 mL — revisa la concentración.",
   "calc.errGeneric": "No se pudo calcular con esos valores.",
+  "calc.mode": "Modo de cálculo",
+  "calc.modeConcentration": "Por concentración",
+  "calc.modeUnits": "Por unidades de jeringa",
+  "calc.syringeType": "Tipo de jeringa",
+  "calc.syringeTypeHint":
+    "U-100 = 100 unidades por mL (la jeringa de insulina habitual).",
+  "calc.noSyringe": "No mostrar unidades",
+  "calc.unitsIntro":
+    "Indica la dosis que quieres y en qué marca debe quedar: calculamos con cuánta agua bacteriostática reconstituir el vial.",
+  "calc.iWantDose": "Quiero que esta dosis",
+  "calc.toEqualUnits": "sea igual a",
+  "calc.targetRecap": "{dose} = {units} u en jeringa {syringe}",
+  "calc.concentration": "Concentración",
+  "calc.perUnit": "Por unidad",
+  "calc.dosesPerVial": "Dosis por vial",
+  "calc.exceedsBarrel":
+    "Esa dosis supera 1 mL, así que no entra en una sola jeringa de insulina. Usa menos unidades o una dosis menor.",
+  "calc.suggestedBarrel": "Entra en una jeringa de {ml} mL ({units} u de escala).",
+  "calc.saveHint":
+    "Guarda estos datos en el tratamiento (agua bacteriostática, jeringa, caducidad) para que queden registrados.",
+  "calc.errZeroDose": "La dosis debe ser mayor que cero.",
+  "calc.errZeroUnits": "Las unidades deben ser mayores que cero.",
+
+  // Reconstitución en el tratamiento
+  "recon.section": "Reconstitución",
+  "recon.hint":
+    "Opcional: registra cómo se preparó el vial para tener siempre a mano la concentración y la dosis en unidades.",
+  "recon.bacWater": "Agua bacteriostática añadida",
+  "recon.syringe": "Jeringa",
+  "recon.noSyringe": "Sin especificar",
+  "recon.reconstitutedAt": "Reconstituido el",
+  "recon.expiresAt": "El vial vence el",
+  "recon.suggestExpiry": "Usar +{days} días",
+  "recon.concentration": "Concentración: {value} mg/mL",
+  "recon.doseEquals": "Tu dosis de {dose} = {units} u en jeringa {syringe}",
+  "recon.doseInUnits": "Dosis en unidades",
+
+  // Vencimiento del vial
+  "vial.expiresLabel": "Vencimiento de vial",
+  "vial.expiresOn": "{name} — vence el vial",
+  "vial.expiresToday": "Vence hoy",
+  "vial.expiresInDays": "En {days} días",
+  "vial.expiredAgo": "Venció hace {days} días",
+  "vial.reminderTitle": "Recordatorios de vencimiento",
+  "vial.reminderToggle": "Avisarme antes de que venza un vial",
+  "vial.reminderWarn": "Avisarme",
+  "vial.warnSameDay": "El día del vencimiento",
+  "vial.warnDays": "{days} días antes",
+  "vial.notifTitle": "Vencimiento de vial",
+  "vial.notifSoon": "{name}: el vial vence en {days} días.",
+  "vial.notifToday": "{name}: el vial vence hoy.",
+  "vial.notifExpired": "{name}: el vial ya venció.",
 
   // History
   "hist.title": "Historial",
@@ -1035,6 +1140,8 @@ const es: Dict = {
   "val.chooseSideEffect": "Introduce o elige un efecto secundario",
   "val.chooseStart": "Elige cuándo comenzó",
   "val.endAfterStart": "El final debe ser posterior al inicio",
+  "val.expiryBeforeRecon":
+    "La fecha de vencimiento debe ser posterior a la de reconstitución",
 };
 
 export const translations: Record<Locale, Dict> = { en, es };

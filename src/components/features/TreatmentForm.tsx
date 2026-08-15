@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { format } from "date-fns";
+import { addDays, format, parseISO } from "date-fns";
 import {
   treatmentSchema,
   DOSE_UNITS,
@@ -12,8 +12,17 @@ import {
   type TreatmentFormValues,
 } from "@/lib/validation/treatment";
 import { generateSchedule } from "@/lib/calendar/generate";
+import {
+  SYRINGE_TYPES,
+  SYRINGE_UNITS_PER_ML,
+  concentrationOf,
+  doseInSyringeUnits,
+  roundUnits,
+  type SyringeType,
+} from "@/lib/calculations/syringe";
+import { roundVolume } from "@/lib/calculations/reconstitution";
 import type { Treatment } from "@/lib/types";
-import { cn } from "@/lib/utils";
+import { cn, formatAmount } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/context";
 import { Button } from "@/components/ui/Button";
 import { Input, Select, Textarea, FieldWrapper } from "@/components/ui/Field";
@@ -27,6 +36,9 @@ import { findPeptide, type Peptide } from "@/lib/peptides";
 // Mon-first ordering of weekday values (0 = Sunday).
 const WEEKDAY_ORDER = [1, 2, 3, 4, 5, 6, 0];
 
+/** Typical fridge life of a reconstituted vial — offered as a shortcut. */
+const DEFAULT_VIAL_DAYS = 28;
+
 function toDefaults(treatment?: Treatment): Partial<TreatmentFormValues> {
   if (!treatment) {
     return {
@@ -37,6 +49,9 @@ function toDefaults(treatment?: Treatment): Partial<TreatmentFormValues> {
       startDate: format(new Date(), "yyyy-MM-dd"),
       durationWeeks: 12,
       scheduledDays: [],
+      syringeType: "U-100",
+      reconstitutedAt: "",
+      vialExpiresAt: "",
     };
   }
   return {
@@ -51,6 +66,10 @@ function toDefaults(treatment?: Treatment): Partial<TreatmentFormValues> {
     scheduledTime: treatment.scheduled_time.slice(0, 5),
     doseAmount: treatment.dose_amount,
     doseUnit: (treatment.dose_unit as TreatmentInput["doseUnit"]) ?? "mg",
+    bacWaterMl: treatment.bac_water_ml ?? undefined,
+    syringeType: (treatment.syringe_type as SyringeType | null) ?? "U-100",
+    reconstitutedAt: treatment.reconstituted_at ?? "",
+    vialExpiresAt: treatment.vial_expires_at ?? "",
     notes: treatment.notes ?? "",
   };
 }
@@ -95,6 +114,7 @@ export function TreatmentForm({
     handleSubmit,
     control,
     watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<TreatmentFormValues, unknown, TreatmentInput>({
     resolver: zodResolver(treatmentSchema),
@@ -107,6 +127,39 @@ export function TreatmentForm({
   const intervalDays = watch("intervalDays");
   const scheduledDays = watch("scheduledDays");
   const scheduledTime = watch("scheduledTime");
+
+  // --- Live reconstitution preview -----------------------------------------
+  const vialQuantity = watch("vialQuantity");
+  const vialUnit = watch("vialUnit");
+  const bacWaterMl = watch("bacWaterMl");
+  const syringeType = watch("syringeType") as SyringeType | "" | undefined;
+  const doseAmount = watch("doseAmount");
+  const doseUnit = watch("doseUnit");
+  const reconstitutedAt = watch("reconstitutedAt");
+
+  const concentration = concentrationOf(
+    Number(vialQuantity),
+    vialUnit ?? "mg",
+    Number(bacWaterMl)
+  );
+  const doseUnits =
+    syringeType && doseAmount
+      ? doseInSyringeUnits({
+          vialQuantity: Number(vialQuantity) || null,
+          vialUnit: vialUnit ?? "mg",
+          bacWaterMl: Number(bacWaterMl) || null,
+          doseAmount: Number(doseAmount),
+          doseUnit: doseUnit ?? "mg",
+          syringe: syringeType,
+        })
+      : null;
+
+  const suggestExpiry = () => {
+    const base = reconstitutedAt ? parseISO(reconstitutedAt) : new Date();
+    setValue("vialExpiresAt", format(addDays(base, DEFAULT_VIAL_DAYS), "yyyy-MM-dd"), {
+      shouldValidate: true,
+    });
+  };
 
   let totalDoses: number | null = null;
   try {
@@ -195,6 +248,88 @@ export function TreatmentForm({
           ))}
         </Select>
       </div>
+
+      <fieldset className="space-y-3 rounded-2xl border border-line bg-cream-deep/40 p-4">
+        <legend className="px-1 text-[13px] font-semibold text-ink-soft">
+          {t("recon.section")}
+        </legend>
+        <p className="text-xs text-muted leading-relaxed">{t("recon.hint")}</p>
+
+        <div className="grid grid-cols-2 gap-3">
+          <Input
+            label={t("recon.bacWater")}
+            type="number"
+            step="any"
+            inputMode="decimal"
+            placeholder="2"
+            suffix="mL"
+            error={errors.bacWaterMl?.message}
+            {...register("bacWaterMl")}
+          />
+          <Select label={t("recon.syringe")} {...register("syringeType")}>
+            <option value="">{t("recon.noSyringe")}</option>
+            {SYRINGE_TYPES.map((type) => (
+              <option key={type} value={type}>
+                {type} ({SYRINGE_UNITS_PER_ML[type]} u/mL)
+              </option>
+            ))}
+          </Select>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <Controller
+            control={control}
+            name="reconstitutedAt"
+            render={({ field }) => (
+              <DateField
+                label={t("recon.reconstitutedAt")}
+                value={field.value ?? ""}
+                onChange={field.onChange}
+                error={errors.reconstitutedAt?.message}
+              />
+            )}
+          />
+          <Controller
+            control={control}
+            name="vialExpiresAt"
+            render={({ field }) => (
+              <DateField
+                label={t("recon.expiresAt")}
+                value={field.value ?? ""}
+                onChange={field.onChange}
+                error={errors.vialExpiresAt?.message}
+              />
+            )}
+          />
+        </div>
+
+        <button
+          type="button"
+          onClick={suggestExpiry}
+          className="rounded-lg border border-line bg-surface px-3 py-1.5 text-xs font-medium text-ink-soft hover:border-line-strong transition-colors"
+        >
+          {t("recon.suggestExpiry", { days: DEFAULT_VIAL_DAYS })}
+        </button>
+
+        {concentration && (
+          <div className="rounded-xl border border-tan-soft bg-tan-faint px-3.5 py-3 text-sm">
+            <p className="text-ink">
+              {t("recon.concentration", {
+                value: formatAmount(roundVolume(concentration)),
+              })}
+            </p>
+            {doseUnits !== null && (
+              <p className="mt-0.5 text-muted">
+                {t("recon.doseEquals", {
+                  dose: `${formatAmount(Number(doseAmount))} ${doseUnit}`,
+                  units: formatAmount(roundUnits(doseUnits)),
+                  syringe: syringeType as string,
+                })}
+              </p>
+            )}
+          </div>
+        )}
+      </fieldset>
 
       <div className="grid grid-cols-2 gap-3">
         <Controller

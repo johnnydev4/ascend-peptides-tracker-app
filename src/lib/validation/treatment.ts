@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { SYRINGE_TYPES } from "@/lib/calculations/syringe";
 
 // Messages are i18n keys; the Field components translate them at render time.
 
@@ -33,6 +34,19 @@ export const treatmentSchema = z
       .number({ error: "val.number" })
       .positive("val.positive"),
     doseUnit: z.enum(DOSE_UNITS),
+    // --- Reconstitution (all optional) ---
+    bacWaterMl: z.coerce
+      .number({ error: "val.number" })
+      .positive("val.positive")
+      .max(1000, "val.tooLarge")
+      .optional()
+      .or(z.literal("").transform(() => undefined)),
+    syringeType: z
+      .enum(SYRINGE_TYPES)
+      .optional()
+      .or(z.literal("").transform(() => undefined)),
+    reconstitutedAt: z.string().optional().or(z.literal("")),
+    vialExpiresAt: z.string().optional().or(z.literal("")),
     notes: z.string().max(2000).optional(),
   })
   .superRefine((data, ctx) => {
@@ -51,6 +65,18 @@ export const treatmentSchema = z
         code: "custom",
         path: ["scheduledDays"],
         message: "val.chooseDay",
+      });
+    }
+    // ISO dates (yyyy-MM-dd) compare correctly as strings.
+    if (
+      data.reconstitutedAt &&
+      data.vialExpiresAt &&
+      data.vialExpiresAt < data.reconstitutedAt
+    ) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["vialExpiresAt"],
+        message: "val.expiryBeforeRecon",
       });
     }
   });

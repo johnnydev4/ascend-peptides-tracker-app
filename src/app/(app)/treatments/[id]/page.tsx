@@ -13,7 +13,20 @@ import {
 } from "@/lib/data/treatments";
 import { listDoses } from "@/lib/data/doses";
 import type { TreatmentInput } from "@/lib/validation/treatment";
-import { formatAmount, formatClockTime, formatFullDate } from "@/lib/utils";
+import {
+  concentrationOf,
+  doseInSyringeUnits,
+  roundUnits,
+  type SyringeType,
+} from "@/lib/calculations/syringe";
+import { roundVolume } from "@/lib/calculations/reconstitution";
+import {
+  cn,
+  daysUntil,
+  formatAmount,
+  formatClockTime,
+  formatFullDate,
+} from "@/lib/utils";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -27,6 +40,33 @@ import { TreatmentForm } from "@/components/features/TreatmentForm";
 import { DoseCard } from "@/components/features/DoseCard";
 import { useI18n } from "@/lib/i18n/context";
 import { treatmentStatusLabel } from "@/lib/i18n/labels";
+
+function Detail({
+  label,
+  value,
+  detail,
+  tone,
+}: {
+  label: string;
+  value: string;
+  detail?: string;
+  tone?: "warn";
+}) {
+  return (
+    <div className="rounded-xl border border-line bg-surface px-3.5 py-3">
+      <p className="text-xs text-muted">{label}</p>
+      <p
+        className={cn(
+          "text-sm font-medium",
+          tone === "warn" ? "text-terracotta" : "text-ink"
+        )}
+      >
+        {value}
+      </p>
+      {detail && <p className="mt-0.5 text-xs text-muted">{detail}</p>}
+    </div>
+  );
+}
 
 export default function TreatmentDetailPage({
   params,
@@ -51,6 +91,24 @@ export default function TreatmentDetailPage({
   if (loading || !data) return <Spinner />;
 
   const { treatment, doses } = data;
+  const concentration = concentrationOf(
+    treatment.vial_quantity ?? 0,
+    treatment.vial_unit,
+    treatment.bac_water_ml ?? 0
+  );
+  const doseUnits = treatment.syringe_type
+    ? doseInSyringeUnits({
+        vialQuantity: treatment.vial_quantity,
+        vialUnit: treatment.vial_unit,
+        bacWaterMl: treatment.bac_water_ml,
+        doseAmount: treatment.dose_amount,
+        doseUnit: treatment.dose_unit,
+        syringe: treatment.syringe_type as SyringeType,
+      })
+    : null;
+  const expiryDaysLeft = treatment.vial_expires_at
+    ? daysUntil(treatment.vial_expires_at)
+    : null;
   const completed = doses.filter((d) => d.status === "completed").length;
   const missed = doses.filter((d) => d.status === "missed").length;
   const pct = doses.length > 0 ? (completed / doses.length) * 100 : 0;
@@ -139,6 +197,60 @@ export default function TreatmentDetailPage({
           <ProgressBar value={pct} label={treatment.name} />
         </CardBody>
       </Card>
+
+      {(treatment.bac_water_ml || treatment.vial_expires_at) && (
+        <Card className="mb-4">
+          <CardHeader title={t("recon.section")} />
+          <CardBody className="grid gap-3 sm:grid-cols-2">
+            {treatment.bac_water_ml && (
+              <Detail
+                label={t("recon.bacWater")}
+                value={`${formatAmount(treatment.bac_water_ml)} mL`}
+              />
+            )}
+            {concentration && (
+              <Detail
+                label={t("calc.concentration")}
+                value={`${formatAmount(roundVolume(concentration))} mg/mL`}
+              />
+            )}
+            {doseUnits !== null && treatment.syringe_type && (
+              <Detail
+                label={t("recon.doseInUnits")}
+                value={`${formatAmount(roundUnits(doseUnits))} u · ${
+                  treatment.syringe_type
+                }`}
+              />
+            )}
+            {treatment.reconstituted_at && (
+              <Detail
+                label={t("recon.reconstitutedAt")}
+                value={formatFullDate(treatment.reconstituted_at)}
+              />
+            )}
+            {treatment.vial_expires_at && (
+              <Detail
+                label={t("recon.expiresAt")}
+                value={formatFullDate(treatment.vial_expires_at)}
+                tone={
+                  expiryDaysLeft !== null && expiryDaysLeft <= 3
+                    ? "warn"
+                    : undefined
+                }
+                detail={
+                  expiryDaysLeft === null
+                    ? undefined
+                    : expiryDaysLeft < 0
+                    ? t("vial.expiredAgo", { days: Math.abs(expiryDaysLeft) })
+                    : expiryDaysLeft === 0
+                    ? t("vial.expiresToday")
+                    : t("vial.expiresInDays", { days: expiryDaysLeft })
+                }
+              />
+            )}
+          </CardBody>
+        </Card>
+      )}
 
       {treatment.notes && (
         <Card className="mb-4">

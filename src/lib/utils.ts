@@ -2,6 +2,7 @@ import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import {
   addDays,
+  differenceInCalendarDays,
   endOfDay,
   format,
   isToday,
@@ -98,6 +99,14 @@ export function isDoseCompletable(
 ): boolean {
   const limit = endOfDay(addDays(now, 1)); // end of tomorrow
   return toDate(scheduledAt).getTime() <= limit.getTime();
+}
+
+/**
+ * Whole days from today to an ISO date (yyyy-MM-dd). Negative once past.
+ * Compared at day granularity so a vial expiring "today" reads as 0.
+ */
+export function daysUntil(date: string | Date, now: Date = new Date()): number {
+  return differenceInCalendarDays(toDate(date), now);
 }
 
 /** Human-readable countdown between now and a future date. */

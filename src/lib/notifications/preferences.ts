@@ -112,3 +112,53 @@ export function saveMeasurementPreferences(
 ): void {
   window.localStorage.setItem(MEASUREMENT_KEY, JSON.stringify(prefs));
 }
+
+// --- Vial expiry reminders --------------------------------------------------
+// Warns, once per day while the app is open, when a reconstituted vial is about
+// to expire (or just did). Device-local like the reminders above.
+
+export interface VialExpiryReminderPreferences {
+  enabled: boolean;
+  /** How many days ahead of the expiry date to start warning. */
+  daysBefore: number;
+  /** ISO date (yyyy-MM-dd) we last showed the warning for. */
+  lastPromptedDate: string | null;
+}
+
+const VIAL_EXPIRY_KEY = "peptide-tracker:vial-expiry-reminders";
+
+export const DEFAULT_VIAL_EXPIRY_PREFERENCES: VialExpiryReminderPreferences = {
+  enabled: false,
+  daysBefore: 3,
+  lastPromptedDate: null,
+};
+
+export function getVialExpiryPreferences(): VialExpiryReminderPreferences {
+  if (typeof window === "undefined") return DEFAULT_VIAL_EXPIRY_PREFERENCES;
+  try {
+    const raw = window.localStorage.getItem(VIAL_EXPIRY_KEY);
+    if (!raw) return DEFAULT_VIAL_EXPIRY_PREFERENCES;
+    const parsed = JSON.parse(raw) as Partial<VialExpiryReminderPreferences>;
+    return {
+      enabled: !!parsed.enabled,
+      daysBefore:
+        typeof parsed.daysBefore === "number" &&
+        parsed.daysBefore >= 0 &&
+        parsed.daysBefore <= 30
+          ? parsed.daysBefore
+          : DEFAULT_VIAL_EXPIRY_PREFERENCES.daysBefore,
+      lastPromptedDate:
+        typeof parsed.lastPromptedDate === "string"
+          ? parsed.lastPromptedDate
+          : null,
+    };
+  } catch {
+    return DEFAULT_VIAL_EXPIRY_PREFERENCES;
+  }
+}
+
+export function saveVialExpiryPreferences(
+  prefs: VialExpiryReminderPreferences
+): void {
+  window.localStorage.setItem(VIAL_EXPIRY_KEY, JSON.stringify(prefs));
+}

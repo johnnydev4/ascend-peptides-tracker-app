@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronLeft, ChevronRight, CalendarDays } from "lucide-react";
+import Link from "next/link";
+import { ChevronLeft, ChevronRight, CalendarDays, FlaskConical } from "lucide-react";
 import {
   addMonths,
   eachDayOfInterval,
@@ -19,8 +20,9 @@ import { useAsyncData } from "@/hooks/useAsyncData";
 import { useUser } from "@/hooks/useUser";
 import { listDosesBetween } from "@/lib/data/doses";
 import { getSiteUsageSummaries } from "@/lib/data/injection-sites";
-import type { DoseWithRelations } from "@/lib/types";
-import { cn, formatDay, formatMonthYear, toDate } from "@/lib/utils";
+import { listVialExpirations } from "@/lib/data/treatments";
+import type { DoseWithRelations, Treatment } from "@/lib/types";
+import { cn, daysUntil, formatDay, formatMonthYear, toDate } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/context";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
@@ -29,6 +31,32 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { DoseCard } from "@/components/features/DoseCard";
 import { RecordDoseDialog } from "@/components/features/RecordDoseDialog";
 import { EditDoseDialog } from "@/components/features/EditDoseDialog";
+
+/** A vial expiring on the selected day, shown above that day's doses. */
+function VialExpiryRow({ treatment }: { treatment: Treatment }) {
+  const { t } = useI18n();
+  const left = daysUntil(treatment.vial_expires_at as string);
+  return (
+    <Link
+      href={`/treatments/${treatment.id}`}
+      className="flex items-center gap-3 rounded-2xl border border-terracotta/40 bg-terracotta-soft px-4 py-3 transition-colors hover:border-terracotta"
+    >
+      <FlaskConical className="size-4 shrink-0 text-terracotta" />
+      <div className="min-w-0">
+        <p className="truncate text-sm font-medium text-ink">
+          {t("vial.expiresOn", { name: treatment.name })}
+        </p>
+        <p className="text-xs text-muted">
+          {left < 0
+            ? t("vial.expiredAgo", { days: Math.abs(left) })
+            : left === 0
+            ? t("vial.expiresToday")
+            : t("vial.expiresInDays", { days: left })}
+        </p>
+      </div>
+    </Link>
+  );
+}
 
 const statusDot: Record<string, string> = {
   scheduled: "bg-line-strong",
@@ -50,17 +78,23 @@ export default function CalendarPage() {
 
   const { data, loading, refresh } = useAsyncData(async () => {
     const supabase = createClient();
-    const [doses, siteSummaries] = await Promise.all([
+    const [doses, siteSummaries, vialExpirations] = await Promise.all([
       listDosesBetween(supabase, gridStart, gridEnd),
       getSiteUsageSummaries(supabase),
+      listVialExpirations(supabase),
     ]);
-    return { doses, siteSummaries };
+    return { doses, siteSummaries, vialExpirations };
   }, [month.toISOString()]);
 
   const days = eachDayOfInterval({ start: gridStart, end: gridEnd });
   const dosesOn = (day: Date) =>
     (data?.doses ?? []).filter((d) => isSameDay(toDate(d.scheduled_at), day));
+  const expiriesOn = (day: Date) =>
+    (data?.vialExpirations ?? []).filter((tr) =>
+      isSameDay(toDate(tr.vial_expires_at as string), day)
+    );
   const selectedDoses = dosesOn(selectedDay);
+  const selectedExpiries = expiriesOn(selectedDay);
 
   return (
     <div>
@@ -114,16 +148,21 @@ export default function CalendarPage() {
                 <div className="grid grid-cols-7 gap-1">
                   {days.map((day) => {
                     const dayDoses = dosesOn(day);
+                    const dayExpiries = expiriesOn(day);
                     const selected = isSameDay(day, selectedDay);
                     return (
                       <button
                         key={day.toISOString()}
                         type="button"
                         onClick={() => setSelectedDay(day)}
-                        aria-label={formatDay(day)}
+                        aria-label={
+                          dayExpiries.length > 0
+                            ? `${formatDay(day)} — ${t("vial.expiresLabel")}`
+                            : formatDay(day)
+                        }
                         aria-pressed={selected}
                         className={cn(
-                          "flex flex-col items-center gap-1 rounded-xl py-2 text-sm transition-colors min-h-12",
+                          "relative flex flex-col items-center gap-1 rounded-xl py-2 text-sm transition-colors min-h-12",
                           !isSameMonth(day, month) && "text-muted/40",
                           selected
                             ? "bg-ink text-cream"
@@ -132,6 +171,15 @@ export default function CalendarPage() {
                             : "hover:bg-cream-deep text-ink-soft"
                         )}
                       >
+                        {dayExpiries.length > 0 && (
+                          <FlaskConical
+                            className={cn(
+                              "absolute right-1 top-1 size-3",
+                              selected ? "text-cream/80" : "text-terracotta"
+                            )}
+                            aria-hidden
+                          />
+                        )}
                         {format(day, "d")}
                         <span className="flex gap-0.5 h-1.5">
                           {dayDoses.slice(0, 3).map((d) => (
@@ -160,6 +208,10 @@ export default function CalendarPage() {
                       {t(labelKey)}
                     </span>
                   ))}
+                  <span className="flex items-center gap-1.5">
+                    <FlaskConical className="size-3 text-terracotta" />
+                    {t("vial.expiresLabel")}
+                  </span>
                 </div>
               </>
             )}
@@ -169,6 +221,9 @@ export default function CalendarPage() {
         <Card className="h-fit">
           <CardHeader title={formatDay(selectedDay)} />
           <CardBody className="space-y-2.5">
+            {selectedExpiries.map((tr) => (
+              <VialExpiryRow key={tr.id} treatment={tr} />
+            ))}
             {selectedDoses.length > 0 ? (
               selectedDoses.map((dose) => (
                 <DoseCard
@@ -179,11 +234,13 @@ export default function CalendarPage() {
                 />
               ))
             ) : (
-              <EmptyState
-                icon={CalendarDays}
-                title={t("cal.noDosesDay")}
-                className="py-8"
-              />
+              selectedExpiries.length === 0 && (
+                <EmptyState
+                  icon={CalendarDays}
+                  title={t("cal.noDosesDay")}
+                  className="py-8"
+                />
+              )
             )}
           </CardBody>
         </Card>
