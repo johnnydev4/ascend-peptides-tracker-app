@@ -11,6 +11,8 @@ export interface DoseFilters {
   from?: string; // ISO
   to?: string; // ISO
   limit?: number;
+  /** Order by scheduled_at ascending (soonest first). Defaults to descending. */
+  ascending?: boolean;
 }
 
 export async function listDoses(
@@ -20,7 +22,7 @@ export async function listDoses(
   let query = supabase
     .from("doses")
     .select(DOSE_SELECT)
-    .order("scheduled_at", { ascending: false });
+    .order("scheduled_at", { ascending: filters.ascending ?? false });
 
   if (filters.treatmentId) query = query.eq("treatment_id", filters.treatmentId);
   if (filters.status) query = query.eq("status", filters.status);

@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -18,6 +19,9 @@ export function Dialog({
   className?: string;
 }) {
   const panelRef = useRef<HTMLDivElement>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => setMounted(true), []);
 
   useEffect(() => {
     if (!open) return;
@@ -32,9 +36,13 @@ export function Dialog({
     };
   }, [open, onClose]);
 
-  if (!open) return null;
+  if (!open || !mounted) return null;
 
-  return (
+  // Rendered through a portal to document.body so the fixed overlay is
+  // positioned against the viewport — not against an ancestor that
+  // establishes a containing block via `transform` (e.g. the page's
+  // `animate-rise` <main>), which would otherwise offset and clip the modal.
+  return createPortal(
     <div
       className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-6"
       role="dialog"
@@ -44,7 +52,7 @@ export function Dialog({
       <button
         type="button"
         aria-label="Close dialog"
-        className="absolute inset-0 bg-ink/30 backdrop-blur-[2px] animate-[fade-in_0.2s_ease-out]"
+        className="absolute inset-0 bg-ink/50 backdrop-blur-sm animate-[fade-in_0.2s_ease-out]"
         onClick={onClose}
         tabIndex={-1}
       />
@@ -70,6 +78,7 @@ export function Dialog({
         </div>
         <div className="px-5 py-5 sm:px-6">{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

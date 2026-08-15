@@ -29,6 +29,8 @@ const en: Dict = {
   "nav.doses": "Doses",
   "nav.injectionSites": "Injection Sites",
   "nav.sideEffects": "Side Effects",
+  "nav.transition": "Transition",
+  "nav.stats": "Statistics",
   "nav.calculator": "Calculator",
   "nav.history": "History",
   "nav.settings": "Settings",
@@ -116,7 +118,7 @@ const en: Dict = {
   "landing.feature.private.title": "Private by design",
   "landing.feature.private.desc":
     "Your data is yours alone, protected with row-level security.",
-  "landing.footer": "Peptide Tracker — organize an existing treatment protocol.",
+  "landing.footer": "Ascend Tracker — organize an existing treatment protocol.",
 
   // Auth
   "auth.welcomeBack": "Welcome back",
@@ -221,7 +223,7 @@ const en: Dict = {
   // Treatment detail
   "trd.editTreatment": "Edit treatment",
   "trd.editHint":
-    "Changing the schedule regenerates upcoming doses. Completed and past doses are never modified.",
+    "Changing the schedule rebuilds the calendar. Doses you've already recorded are kept; the rest are regenerated to match.",
   "trd.resume": "Resume",
   "trd.pause": "Pause",
   "trd.completedStat": "Completed",
@@ -253,6 +255,7 @@ const en: Dict = {
   "dose.allCaughtUpDesc": "No doses waiting to be recorded.",
   "dose.next7": "Next 7 days",
   "dose.nothingScheduledDesc": "Doses appear here once a treatment is active.",
+  "dose.notYetAvailable": "Available on the dose day (today or tomorrow only).",
 
   // Record page
   "rec.title": "Record a dose",
@@ -393,6 +396,79 @@ const en: Dict = {
     "You're exploring with sample data stored only in this browser — no account or server involved. Add Supabase keys to .env.local to switch to a real backend.",
   "set.resetDemo": "Reset demo data",
 
+  // Body-measurement metrics
+  "metric.weight": "Weight",
+  "metric.body_fat": "Body fat",
+  "metric.muscle_mass": "Muscle mass",
+  "metric.neck": "Neck",
+  "metric.chest": "Chest",
+  "metric.waist": "Waist",
+  "metric.hips": "Hips",
+  "metric.arms": "Arms",
+  "metric.thighs": "Thighs",
+
+  // Transition (body tracking)
+  "trans.title": "Transition",
+  "trans.subtitle": "Track your body composition and progress over time.",
+  "trans.add": "New entry",
+  "trans.addTitle": "New measurement",
+  "trans.editTitle": "Edit measurement",
+  "trans.date": "Date",
+  "trans.composition": "Weight & composition",
+  "trans.weightUnit": "Weight unit",
+  "trans.muscleMass": "Muscle mass",
+  "trans.bodyFatPct": "Body fat",
+  "trans.circumferences": "Circumferences",
+  "trans.lengthUnit": "Unit",
+  "trans.photos": "Progress photos",
+  "trans.addPhotos": "Add photos",
+  "trans.processing": "Processing…",
+  "trans.photosHint": "Up to {max} photos, stored privately with this entry.",
+  "trans.photoAlt": "Progress photo {n}",
+  "trans.notesPh": "How you feel, context for these numbers…",
+  "trans.records": "Records",
+  "trans.currentWeight": "Current weight",
+  "trans.weightChange": "Weight change",
+  "trans.entries": "Entries",
+  "trans.noValues": "No values recorded for this entry.",
+  "trans.emptyTitle": "No measurements yet",
+  "trans.emptyDesc":
+    "Add your weight and body measurements to start tracking your transition.",
+  "trans.deleteTitle": "Delete measurement?",
+  "trans.deleteMessage": "This permanently removes this entry and its photos.",
+  "trans.reminderTitle": "Weigh-in reminders",
+  "trans.reminderToggle": "Remind me to take measurements",
+  "trans.reminderEvery": "Every",
+  "trans.reminderTime": "Time",
+  "trans.everyDay": "Every day",
+  "trans.everyN": "Every {n} days",
+
+  // Measurement reminder notification
+  "mreminder.title": "Time to weigh in",
+  "mreminder.body":
+    "Log your weight and body measurements to keep your progress up to date.",
+
+  // Statistics
+  "stats.title": "Statistics",
+  "stats.subtitle": "Your dose activity and body progress over time.",
+  "stats.range": "Range",
+  "stats.range30": "Last 30 days",
+  "stats.range90": "Last 90 days",
+  "stats.range365": "Last year",
+  "stats.rangeAll": "All time",
+  "stats.dosesCompleted": "Doses completed",
+  "stats.dosesMissed": "Doses missed",
+  "stats.metricTrend": "Body metric trend",
+  "stats.metric": "Metric",
+  "stats.dataPoints": "{n} data points",
+  "stats.noMetricData": "No data for this metric",
+  "stats.noMetricDesc":
+    "Record measurements in Transition to see the trend here.",
+  "stats.doseActivity": "Dose activity",
+  "stats.noDoseData": "No dose activity in this range",
+  "stats.addMeasurementsHint":
+    "Tip: add measurements in Transition to unlock body-progress charts.",
+
   // Notification
   "notif.title": "Upcoming dose",
   "notif.at": "at",
@@ -400,7 +476,7 @@ const en: Dict = {
   // Offline
   "off.title": "You're offline",
   "off.body":
-    "Peptide Tracker needs a connection to load fresh data. Your records are safe — reconnect and try again.",
+    "Ascend Tracker needs a connection to load fresh data. Your records are safe — reconnect and try again.",
 
   // Validation (zod message keys)
   "val.emailInvalid": "Enter a valid email address",
@@ -410,6 +486,8 @@ const en: Dict = {
   "val.passwordsNoMatch": "Passwords do not match",
   "val.number": "Enter a number",
   "val.positive": "Must be greater than zero",
+  "val.chooseDate": "Choose a date",
+  "val.percentRange": "Must be between 0 and 100",
   "val.peptideName": "Enter the peptide name",
   "val.chooseStartDate": "Choose a start date",
   "val.wholeWeeks": "Whole weeks only",
@@ -453,6 +531,8 @@ const es: Dict = {
   "nav.doses": "Dosis",
   "nav.injectionSites": "Zonas de inyección",
   "nav.sideEffects": "Efectos secundarios",
+  "nav.transition": "Transición",
+  "nav.stats": "Estadísticas",
   "nav.calculator": "Calculadora",
   "nav.history": "Historial",
   "nav.settings": "Ajustes",
@@ -542,7 +622,7 @@ const es: Dict = {
   "landing.feature.private.desc":
     "Tus datos son solo tuyos, protegidos con seguridad a nivel de fila.",
   "landing.footer":
-    "Peptide Tracker — organiza un protocolo de tratamiento existente.",
+    "Ascend Tracker — organiza un protocolo de tratamiento existente.",
 
   // Auth
   "auth.welcomeBack": "Bienvenido de nuevo",
@@ -648,7 +728,7 @@ const es: Dict = {
   // Treatment detail
   "trd.editTreatment": "Editar tratamiento",
   "trd.editHint":
-    "Cambiar el calendario regenera las dosis futuras. Las dosis completadas y pasadas nunca se modifican.",
+    "Al cambiar el calendario se reconstruye. Las dosis que ya registraste se conservan; el resto se regenera para coincidir.",
   "trd.resume": "Reanudar",
   "trd.pause": "Pausar",
   "trd.completedStat": "Completadas",
@@ -681,6 +761,8 @@ const es: Dict = {
   "dose.next7": "Próximos 7 días",
   "dose.nothingScheduledDesc":
     "Las dosis aparecen aquí cuando hay un tratamiento activo.",
+  "dose.notYetAvailable":
+    "Disponible el día de la dosis (solo hoy o mañana).",
 
   // Record page
   "rec.title": "Registrar una dosis",
@@ -821,6 +903,83 @@ const es: Dict = {
     "Estás explorando con datos de ejemplo guardados solo en este navegador — sin cuenta ni servidor. Añade las claves de Supabase a .env.local para cambiar a un backend real.",
   "set.resetDemo": "Restablecer datos de demo",
 
+  // Body-measurement metrics
+  "metric.weight": "Peso",
+  "metric.body_fat": "Grasa corporal",
+  "metric.muscle_mass": "Masa muscular",
+  "metric.neck": "Cuello",
+  "metric.chest": "Pecho",
+  "metric.waist": "Cintura",
+  "metric.hips": "Cadera",
+  "metric.arms": "Brazos",
+  "metric.thighs": "Muslos",
+
+  // Transition (seguimiento corporal)
+  "trans.title": "Transición",
+  "trans.subtitle":
+    "Sigue tu composición corporal y tu progreso a lo largo del tiempo.",
+  "trans.add": "Nueva medición",
+  "trans.addTitle": "Nueva medición",
+  "trans.editTitle": "Editar medición",
+  "trans.date": "Fecha",
+  "trans.composition": "Peso y composición",
+  "trans.weightUnit": "Unidad de peso",
+  "trans.muscleMass": "Masa muscular",
+  "trans.bodyFatPct": "Grasa corporal",
+  "trans.circumferences": "Circunferencias",
+  "trans.lengthUnit": "Unidad",
+  "trans.photos": "Fotos de progreso",
+  "trans.addPhotos": "Añadir fotos",
+  "trans.processing": "Procesando…",
+  "trans.photosHint":
+    "Hasta {max} fotos, guardadas de forma privada con este registro.",
+  "trans.photoAlt": "Foto de progreso {n}",
+  "trans.notesPh": "Cómo te sientes, contexto de estos números…",
+  "trans.records": "Registros",
+  "trans.currentWeight": "Peso actual",
+  "trans.weightChange": "Cambio de peso",
+  "trans.entries": "Registros",
+  "trans.noValues": "No hay valores en este registro.",
+  "trans.emptyTitle": "Aún no hay mediciones",
+  "trans.emptyDesc":
+    "Añade tu peso y medidas corporales para empezar a seguir tu transición.",
+  "trans.deleteTitle": "¿Eliminar medición?",
+  "trans.deleteMessage":
+    "Esto elimina permanentemente este registro y sus fotos.",
+  "trans.reminderTitle": "Recordatorios de medición",
+  "trans.reminderToggle": "Recordarme tomar medidas",
+  "trans.reminderEvery": "Cada",
+  "trans.reminderTime": "Hora",
+  "trans.everyDay": "Todos los días",
+  "trans.everyN": "Cada {n} días",
+
+  // Notificación de medición
+  "mreminder.title": "Hora de pesarte",
+  "mreminder.body":
+    "Registra tu peso y medidas corporales para mantener tu progreso al día.",
+
+  // Estadísticas
+  "stats.title": "Estadísticas",
+  "stats.subtitle":
+    "Tu actividad de dosis y tu progreso corporal a lo largo del tiempo.",
+  "stats.range": "Rango",
+  "stats.range30": "Últimos 30 días",
+  "stats.range90": "Últimos 90 días",
+  "stats.range365": "Último año",
+  "stats.rangeAll": "Todo el tiempo",
+  "stats.dosesCompleted": "Dosis completadas",
+  "stats.dosesMissed": "Dosis omitidas",
+  "stats.metricTrend": "Tendencia de medida corporal",
+  "stats.metric": "Medida",
+  "stats.dataPoints": "{n} puntos de datos",
+  "stats.noMetricData": "Sin datos para esta medida",
+  "stats.noMetricDesc":
+    "Registra mediciones en Transición para ver la tendencia aquí.",
+  "stats.doseActivity": "Actividad de dosis",
+  "stats.noDoseData": "Sin actividad de dosis en este rango",
+  "stats.addMeasurementsHint":
+    "Consejo: añade mediciones en Transición para desbloquear las gráficas de progreso corporal.",
+
   // Notification
   "notif.title": "Próxima dosis",
   "notif.at": "a las",
@@ -828,7 +987,7 @@ const es: Dict = {
   // Offline
   "off.title": "Estás sin conexión",
   "off.body":
-    "Peptide Tracker necesita conexión para cargar datos actualizados. Tus registros están a salvo — vuelve a conectarte e inténtalo de nuevo.",
+    "Ascend Tracker necesita conexión para cargar datos actualizados. Tus registros están a salvo — vuelve a conectarte e inténtalo de nuevo.",
 
   // Validation
   "val.emailInvalid": "Introduce un correo válido",
@@ -838,6 +997,8 @@ const es: Dict = {
   "val.passwordsNoMatch": "Las contraseñas no coinciden",
   "val.number": "Introduce un número",
   "val.positive": "Debe ser mayor que cero",
+  "val.chooseDate": "Elige una fecha",
+  "val.percentRange": "Debe estar entre 0 y 100",
   "val.peptideName": "Introduce el nombre del péptido",
   "val.chooseStartDate": "Elige una fecha de inicio",
   "val.wholeWeeks": "Solo semanas completas",

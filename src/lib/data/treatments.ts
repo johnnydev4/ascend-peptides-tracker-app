@@ -60,8 +60,12 @@ export async function createTreatment(
 }
 
 /**
- * Updates a treatment. If schedule-affecting fields changed, future scheduled
- * doses are regenerated; past/recorded doses are never touched.
+ * Updates a treatment and rebuilds its schedule so the calendar always matches
+ * the current parameters. Doses the user actually recorded (completed) are kept;
+ * every other dose (scheduled/missed/skipped, which are auto-generated and
+ * never administered) is deleted and regenerated. This ensures that correcting,
+ * e.g., an accidental start date removes the now-orphaned doses instead of
+ * leaving stale "missed" entries behind on the calendar.
  */
 export async function updateTreatment(
   supabase: SupabaseClient,
@@ -93,18 +97,28 @@ export async function updateTreatment(
     .single();
   if (error) throw error;
 
-  // Regenerate only untouched future events.
-  const nowIso = new Date().toISOString();
+  // Keep completed (recorded) doses; drop everything else and regenerate.
+  const { data: completedRows, error: compError } = await supabase
+    .from("doses")
+    .select("scheduled_at")
+    .eq("treatment_id", id)
+    .eq("status", "completed");
+  if (compError) throw compError;
+
   const { error: delError } = await supabase
     .from("doses")
     .delete()
     .eq("treatment_id", id)
-    .eq("status", "scheduled")
-    .gte("scheduled_at", nowIso);
+    .neq("status", "completed");
   if (delError) throw delError;
 
+  // Don't recreate a scheduled dose on a day that already has a recorded one.
+  const takenDays = new Set(
+    (completedRows ?? []).map((r) => dayKey(new Date(r.scheduled_at as string)))
+  );
+
   await insertScheduledDoses(supabase, userId, treatment as Treatment, input, {
-    onlyAfter: new Date(),
+    skipDays: takenDays,
   });
 
   return treatment as Treatment;
@@ -127,12 +141,17 @@ export async function deleteTreatment(supabase: SupabaseClient, id: string) {
   if (error) throw error;
 }
 
+/** Local calendar-day key (yyyy-M-d) used to dedupe doses by day. */
+function dayKey(d: Date): string {
+  return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+}
+
 async function insertScheduledDoses(
   supabase: SupabaseClient,
   userId: string,
   treatment: Treatment,
   input: TreatmentInput,
-  options?: { onlyAfter?: Date }
+  options?: { onlyAfter?: Date; skipDays?: Set<string> }
 ) {
   const schedule = generateSchedule({
     startDate: input.startDate,
@@ -145,6 +164,7 @@ async function insertScheduledDoses(
 
   const rows = schedule
     .filter((d) => !options?.onlyAfter || d.scheduledAt > options.onlyAfter)
+    .filter((d) => !options?.skipDays?.has(dayKey(d.scheduledAt)))
     .map((d) => ({
       treatment_id: treatment.id,
       user_id: userId,

@@ -8,6 +8,8 @@ import {
   Calculator,
   Clock,
   Settings,
+  Ruler,
+  TrendingUp,
   type LucideIcon,
 } from "lucide-react";
 
@@ -25,6 +27,8 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/doses", label: "nav.doses", icon: Pill },
   { href: "/injection-sites", label: "nav.injectionSites", icon: Target },
   { href: "/side-effects", label: "nav.sideEffects", icon: Sparkles },
+  { href: "/transition", label: "nav.transition", icon: Ruler },
+  { href: "/stats", label: "nav.stats", icon: TrendingUp },
   { href: "/calculator", label: "nav.calculator", icon: Calculator },
   { href: "/history", label: "nav.history", icon: Clock },
   { href: "/settings", label: "nav.settings", icon: Settings },

@@ -15,6 +15,11 @@ export function severityLabel(t: TFn, severity: string): string {
   return t(`severity.${severity}`);
 }
 
+/** Localized label for a body-measurement metric. */
+export function metricLabel(t: TFn, metric: string): string {
+  return t(`metric.${metric}`);
+}
+
 /**
  * Localized injection-site name from its body region, falling back to the
  * stored name for any custom region without a translation.

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 import { createClient } from "@/lib/supabase/client";
@@ -17,6 +17,7 @@ import { useI18n } from "@/lib/i18n/context";
 import { Dialog } from "@/components/ui/Dialog";
 import { Button } from "@/components/ui/Button";
 import { Input, Select, Textarea, FieldWrapper } from "@/components/ui/Field";
+import { DateTimeField } from "@/components/ui/DateTimePicker";
 
 const SEVERITIES = [
   { value: "mild", labelKey: "severityOpt.mild" },
@@ -47,6 +48,7 @@ export function SideEffectDialog({
     setValue,
     watch,
     reset,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<SideEffectInput>({
     resolver: zodResolver(sideEffectSchema),
@@ -139,17 +141,29 @@ export function SideEffectDialog({
         </FieldWrapper>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <Input
-            label={t("se.started")}
-            type="datetime-local"
-            error={errors.startedAt?.message}
-            {...register("startedAt")}
+          <Controller
+            control={control}
+            name="startedAt"
+            render={({ field }) => (
+              <DateTimeField
+                label={t("se.started")}
+                value={field.value ?? ""}
+                onChange={field.onChange}
+                error={errors.startedAt?.message}
+              />
+            )}
           />
-          <Input
-            label={t("se.ended")}
-            type="datetime-local"
-            error={errors.endedAt?.message}
-            {...register("endedAt")}
+          <Controller
+            control={control}
+            name="endedAt"
+            render={({ field }) => (
+              <DateTimeField
+                label={t("se.ended")}
+                value={field.value ?? ""}
+                onChange={field.onChange}
+                error={errors.endedAt?.message}
+              />
+            )}
           />
         </div>
 

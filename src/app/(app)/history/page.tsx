@@ -11,7 +11,8 @@ import type { DoseStatus } from "@/lib/types";
 import { formatAmount, formatDateTime } from "@/lib/utils";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Card, CardBody } from "@/components/ui/Card";
-import { Select, Input } from "@/components/ui/Field";
+import { Select } from "@/components/ui/Field";
+import { DateField } from "@/components/ui/DateTimePicker";
 import { Spinner } from "@/components/ui/Spinner";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Badge, statusTone } from "@/components/ui/Badge";
@@ -88,18 +89,12 @@ export default function HistoryPage() {
                 </option>
               ))}
             </Select>
-            <Input
+            <DateField
               label={t("hist.from")}
-              type="date"
               value={from}
-              onChange={(e) => setFrom(e.target.value)}
+              onChange={setFrom}
             />
-            <Input
-              label={t("hist.to")}
-              type="date"
-              value={to}
-              onChange={(e) => setTo(e.target.value)}
-            />
+            <DateField label={t("hist.to")} value={to} onChange={setTo} />
           </div>
         </CardBody>
       </Card>

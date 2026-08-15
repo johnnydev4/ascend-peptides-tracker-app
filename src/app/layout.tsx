@@ -17,18 +17,19 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  // Previous product name kept for reference: "Peptide Tracker"
   title: {
-    default: "Peptide Tracker",
-    template: "%s · Peptide Tracker",
+    default: "Ascend Tracker",
+    template: "%s · Ascend Tracker",
   },
   description:
     "A calm, private tracker for organizing peptide treatment protocols, doses, injection sites, and progress.",
-  applicationName: "Peptide Tracker",
+  applicationName: "Ascend Tracker",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Peptide Tracker",
+    title: "Ascend Tracker",
   },
   icons: {
     icon: [
