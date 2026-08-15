@@ -120,7 +120,11 @@ export interface BodyMeasurement {
   waist: number | null;
   hips: number | null;
   arms: number | null;
+  arm_left: number | null;
+  arm_right: number | null;
   thighs: number | null;
+  thigh_left: number | null;
+  thigh_right: number | null;
   notes: string | null;
   photos: string[]; // data URLs
   created_at: string;
@@ -137,7 +141,11 @@ export const MEASUREMENT_METRICS = [
   "waist",
   "hips",
   "arms",
+  "arm_left",
+  "arm_right",
   "thighs",
+  "thigh_left",
+  "thigh_right",
 ] as const;
 
 export type MeasurementMetric = (typeof MEASUREMENT_METRICS)[number];

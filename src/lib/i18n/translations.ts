@@ -363,7 +363,7 @@ const en: Dict = {
   "calc.errGeneric": "Could not calculate with those values.",
   "calc.mode": "Calculation mode",
   "calc.modeConcentration": "By concentration",
-  "calc.modeUnits": "By syringe units",
+  "calc.modeUnits": "By units",
   "calc.syringeType": "Syringe type",
   "calc.syringeTypeHint": "U-100 = 100 units per mL (the usual insulin syringe).",
   "calc.noSyringe": "Don't show units",
@@ -397,6 +397,13 @@ const en: Dict = {
   "calc.errZeroWeight": "Both weights must be greater than zero.",
   "calc.errWeightOrder":
     "The weight after reconstituting must be greater than the weight before.",
+  "calc.modeVolume": "By water",
+  "calc.volumeIntro":
+    "Enter how much bacteriostatic water you want to put in the vial and get the concentration that comes out of it.",
+  "calc.waterToUse": "BAC water to use",
+  "calc.volumeRecap": "{vial} in {ml} of water",
+  "calc.resultingConcentration": "Resulting concentration with that water.",
+  "calc.errZeroWater": "The amount of water must be greater than zero.",
 
   // Reconstitution on a treatment
   "recon.section": "Reconstitution",
@@ -482,7 +489,11 @@ const en: Dict = {
   "metric.waist": "Waist",
   "metric.hips": "Hips",
   "metric.arms": "Arms",
+  "metric.arm_left": "Left arm",
+  "metric.arm_right": "Right arm",
   "metric.thighs": "Thighs",
+  "metric.thigh_left": "Left thigh",
+  "metric.thigh_right": "Right thigh",
 
   // Transition (body tracking)
   "trans.title": "Transition",
@@ -949,7 +960,7 @@ const es: Dict = {
   "calc.errGeneric": "No se pudo calcular con esos valores.",
   "calc.mode": "Modo de cálculo",
   "calc.modeConcentration": "Por concentración",
-  "calc.modeUnits": "Por unidades de jeringa",
+  "calc.modeUnits": "Por unidades",
   "calc.syringeType": "Tipo de jeringa",
   "calc.syringeTypeHint":
     "U-100 = 100 unidades por mL (la jeringa de insulina habitual).",
@@ -984,6 +995,13 @@ const es: Dict = {
   "calc.errZeroWeight": "Ambos pesos deben ser mayores que cero.",
   "calc.errWeightOrder":
     "El peso después de reconstituir debe ser mayor que el peso antes.",
+  "calc.modeVolume": "Por agua",
+  "calc.volumeIntro":
+    "Indica cuánta agua bacteriostática quieres poner en el vial y obtén la concentración que resulta.",
+  "calc.waterToUse": "Agua bacteriostática a usar",
+  "calc.volumeRecap": "{vial} en {ml} de agua",
+  "calc.resultingConcentration": "Concentración resultante con esa agua.",
+  "calc.errZeroWater": "La cantidad de agua debe ser mayor que cero.",
 
   // Reconstitución en el tratamiento
   "recon.section": "Reconstitución",
@@ -1069,7 +1087,11 @@ const es: Dict = {
   "metric.waist": "Cintura",
   "metric.hips": "Cadera",
   "metric.arms": "Brazos",
+  "metric.arm_left": "Brazo izquierdo",
+  "metric.arm_right": "Brazo derecho",
   "metric.thighs": "Muslos",
+  "metric.thigh_left": "Muslo izquierdo",
+  "metric.thigh_right": "Muslo derecho",
 
   // Transition (seguimiento corporal)
   "trans.title": "Transición",

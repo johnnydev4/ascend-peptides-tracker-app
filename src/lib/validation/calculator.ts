@@ -79,3 +79,24 @@ export const weightCalculatorSchema = z.object({
 
 export type WeightCalculatorInput = z.output<typeof weightCalculatorSchema>;
 export type WeightCalculatorFormValues = z.input<typeof weightCalculatorSchema>;
+
+/** "I want to use this much BAC water" — gives the resulting concentration. */
+export const volumeCalculatorSchema = z.object({
+  vialQuantity: z.coerce
+    .number({ error: "val.number" })
+    .positive("val.positive")
+    .max(100000, "val.tooLarge"),
+  vialUnit: z.enum(["mg", "mcg"]),
+  waterMl: z.coerce
+    .number({ error: "val.number" })
+    .positive("val.positive")
+    .max(1000, "val.tooLarge"),
+  /** Optional: shows the per-dose table in syringe units too. */
+  syringeType: z
+    .enum(SYRINGE_TYPES)
+    .optional()
+    .or(z.literal("").transform(() => undefined)),
+});
+
+export type VolumeCalculatorInput = z.output<typeof volumeCalculatorSchema>;
+export type VolumeCalculatorFormValues = z.input<typeof volumeCalculatorSchema>;

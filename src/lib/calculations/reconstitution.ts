@@ -62,6 +62,46 @@ export function calculateReconstitution(
   };
 }
 
+export interface VolumeReconstitutionInput {
+  vialQuantity: number;
+  vialUnit: "mg" | "mcg";
+  /** Bacteriostatic water the user intends to put in, in mL. */
+  waterMl: number;
+}
+
+/**
+ * The other way round from {@link calculateReconstitution}: the user already
+ * knows how much water they want to use (a full 2 mL syringe, say) and wants
+ * the concentration that comes out of it.
+ */
+export function calculateFromVolume(
+  input: VolumeReconstitutionInput
+): ReconstitutionResult {
+  const { vialQuantity, vialUnit, waterMl } = input;
+
+  // Error messages are i18n keys, translated by the caller at render time.
+  if (!Number.isFinite(vialQuantity) || vialQuantity <= 0) {
+    throw new CalculationError("calc.errZeroVial");
+  }
+  if (!Number.isFinite(waterMl) || waterMl <= 0) {
+    throw new CalculationError("calc.errZeroWater");
+  }
+
+  const vialMg = vialUnit === "mcg" ? vialQuantity / 1000 : vialQuantity;
+  const concentrationMgPerMl = vialMg / waterMl;
+
+  if (!Number.isFinite(concentrationMgPerMl) || concentrationMgPerMl <= 0) {
+    throw new CalculationError("calc.errInvalid");
+  }
+
+  return {
+    volumeMl: waterMl,
+    vialMg,
+    concentrationMgPerMl,
+    volumeForDoseMg: (doseMg: number) => doseMg / concentrationMgPerMl,
+  };
+}
+
 /**
  * Bacteriostatic water is ~99% water with 0.9% benzyl alcohol, so 1 g ≈ 1 mL.
  * Good enough for a kitchen/jewellery scale, which is what this mode is for.

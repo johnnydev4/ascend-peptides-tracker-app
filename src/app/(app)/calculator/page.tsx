@@ -3,13 +3,21 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { FlaskConical, Equal, Syringe, AlertTriangle, Scale } from "lucide-react";
+import {
+  FlaskConical,
+  Equal,
+  Syringe,
+  AlertTriangle,
+  Scale,
+  Droplet,
+} from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useAsyncData } from "@/hooks/useAsyncData";
 import { useUser } from "@/hooks/useUser";
 import {
   calculateReconstitution,
   calculateFromWeight,
+  calculateFromVolume,
   roundVolume,
   CalculationError,
   type ReconstitutionResult,
@@ -27,12 +35,15 @@ import {
   calculatorSchema,
   syringeCalculatorSchema,
   weightCalculatorSchema,
+  volumeCalculatorSchema,
   type CalculatorInput,
   type CalculatorFormValues,
   type SyringeCalculatorInput,
   type SyringeCalculatorFormValues,
   type WeightCalculatorInput,
   type WeightCalculatorFormValues,
+  type VolumeCalculatorInput,
+  type VolumeCalculatorFormValues,
 } from "@/lib/validation/calculator";
 import { listCalculatorHistory, saveCalculation } from "@/lib/data/calculator";
 import { cn, formatAmount, formatDay } from "@/lib/utils";
@@ -45,7 +56,7 @@ import { useI18n } from "@/lib/i18n/context";
 
 const SYRINGE_DOSES_MG = [0.25, 0.5, 1, 2, 2.5];
 
-type Mode = "concentration" | "units" | "weight";
+type Mode = "concentration" | "units" | "weight" | "volume";
 
 type Outcome =
   | { mode: "concentration"; result: ReconstitutionResult; inputs: CalculatorInput }
@@ -54,6 +65,11 @@ type Outcome =
       mode: "weight";
       result: WeightReconstitutionResult;
       inputs: WeightCalculatorInput;
+    }
+  | {
+      mode: "volume";
+      result: ReconstitutionResult;
+      inputs: VolumeCalculatorInput;
     };
 
 export default function CalculatorPage() {
@@ -98,6 +114,17 @@ export default function CalculatorPage() {
     defaultValues: {
       vialUnit: "mg",
       weightUnit: "g",
+    },
+  });
+
+  const volumeForm = useForm<
+    VolumeCalculatorFormValues,
+    unknown,
+    VolumeCalculatorInput
+  >({
+    resolver: zodResolver(volumeCalculatorSchema),
+    defaultValues: {
+      vialUnit: "mg",
     },
   });
 
@@ -182,6 +209,22 @@ export default function CalculatorPage() {
     }
   };
 
+  const onSubmitVolume = async (values: VolumeCalculatorInput) => {
+    setCalcError(null);
+    try {
+      const result = calculateFromVolume(values);
+      setOutcome({ mode: "volume", result, inputs: values });
+      await persist(
+        result.concentrationMgPerMl,
+        result.volumeMl,
+        values.vialQuantity,
+        values.vialUnit
+      );
+    } catch (error) {
+      handleError(error);
+    }
+  };
+
   const switchMode = (next: Mode) => {
     setMode(next);
     setOutcome(null);
@@ -204,9 +247,9 @@ export default function CalculatorPage() {
               <div
                 role="tablist"
                 aria-label={t("calc.mode")}
-                className="mb-5 grid grid-cols-3 gap-1 rounded-xl bg-cream-deep p-1"
+                className="mb-5 grid grid-cols-2 gap-1 rounded-xl bg-cream-deep p-1 sm:grid-cols-4"
               >
-                {(["concentration", "units", "weight"] as const).map((m) => (
+                {(["concentration", "units", "weight", "volume"] as const).map((m) => (
                   <button
                     key={m}
                     type="button"
@@ -224,7 +267,9 @@ export default function CalculatorPage() {
                       ? t("calc.modeConcentration")
                       : m === "units"
                       ? t("calc.modeUnits")
-                      : t("calc.modeWeight")}
+                      : m === "weight"
+                      ? t("calc.modeWeight")
+                      : t("calc.modeVolume")}
                   </button>
                 ))}
               </div>
@@ -378,7 +423,7 @@ export default function CalculatorPage() {
                     {t("calc.calculate")}
                   </Button>
                 </form>
-              ) : (
+              ) : mode === "weight" ? (
                 <form
                   onSubmit={weightForm.handleSubmit(onSubmitWeight)}
                   className="space-y-4"
@@ -462,6 +507,68 @@ export default function CalculatorPage() {
                     {t("calc.calculate")}
                   </Button>
                 </form>
+              ) : (
+                <form
+                  onSubmit={volumeForm.handleSubmit(onSubmitVolume)}
+                  className="space-y-4"
+                  noValidate
+                >
+                  <p className="text-sm text-muted leading-relaxed">
+                    {t("calc.volumeIntro")}
+                  </p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <Input
+                      label={t("calc.vialQuantity")}
+                      type="number"
+                      step="any"
+                      inputMode="decimal"
+                      placeholder="10"
+                      error={volumeForm.formState.errors.vialQuantity?.message}
+                      {...volumeForm.register("vialQuantity")}
+                    />
+                    <Select
+                      label={t("calc.unit")}
+                      {...volumeForm.register("vialUnit")}
+                    >
+                      <option value="mg">mg</option>
+                      <option value="mcg">mcg</option>
+                    </Select>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <Input
+                      label={t("calc.waterToUse")}
+                      type="number"
+                      step="any"
+                      inputMode="decimal"
+                      placeholder="2"
+                      suffix="mL"
+                      error={volumeForm.formState.errors.waterMl?.message}
+                      {...volumeForm.register("waterMl")}
+                    />
+                    <Select
+                      label={`${t("calc.syringeType")} ${t("common.optional")}`}
+                      {...volumeForm.register("syringeType")}
+                    >
+                      <option value="">{t("calc.noSyringe")}</option>
+                      {SYRINGE_TYPES.map((type) => (
+                        <option key={type} value={type}>
+                          {type} ({SYRINGE_UNITS_PER_ML[type]} u/mL)
+                        </option>
+                      ))}
+                    </Select>
+                  </div>
+
+                  {calcError && (
+                    <p role="alert" className="text-sm text-terracotta">
+                      {calcError}
+                    </p>
+                  )}
+
+                  <Button type="submit" className="w-full">
+                    {t("calc.calculate")}
+                  </Button>
+                </form>
               )}
 
               {outcome && (
@@ -490,6 +597,16 @@ export default function CalculatorPage() {
                         })}
                       </span>
                     </div>
+                  ) : outcome.mode === "volume" ? (
+                    <div className="flex items-center gap-2 text-sm text-muted">
+                      <Droplet className="size-4" />
+                      <span>
+                        {t("calc.volumeRecap", {
+                          vial: `${formatAmount(outcome.inputs.vialQuantity)} ${outcome.inputs.vialUnit}`,
+                          ml: `${formatAmount(outcome.inputs.waterMl)} mL`,
+                        })}
+                      </span>
+                    </div>
                   ) : (
                     <div className="flex items-center gap-2 text-sm text-muted">
                       <Scale className="size-4" />
@@ -505,7 +622,7 @@ export default function CalculatorPage() {
                     </div>
                   )}
 
-                  {outcome.mode === "weight" ? (
+                  {outcome.mode === "weight" || outcome.mode === "volume" ? (
                     <>
                       <p className="mt-2 text-3xl font-semibold tracking-tight text-ink">
                         {formatAmount(
@@ -514,7 +631,9 @@ export default function CalculatorPage() {
                         mg/mL
                       </p>
                       <p className="mt-1 text-sm text-muted">
-                        {t("calc.realConcentration")}
+                        {outcome.mode === "weight"
+                          ? t("calc.realConcentration")
+                          : t("calc.resultingConcentration")}
                       </p>
                       <div className="mt-4 grid gap-2 sm:grid-cols-3 text-sm">
                         <Stat

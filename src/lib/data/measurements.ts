@@ -38,7 +38,11 @@ function toRow(userId: string, input: MeasurementInput, photos: string[]) {
     waist: input.waist ?? null,
     hips: input.hips ?? null,
     arms: input.arms ?? null,
+    arm_left: input.armLeft ?? null,
+    arm_right: input.armRight ?? null,
     thighs: input.thighs ?? null,
+    thigh_left: input.thighLeft ?? null,
+    thigh_right: input.thighRight ?? null,
     notes: input.notes || null,
     photos,
   };

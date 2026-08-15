@@ -64,7 +64,11 @@ export function MeasurementDialog({
       waist: num(measurement?.waist),
       hips: num(measurement?.hips),
       arms: num(measurement?.arms),
+      armLeft: num(measurement?.arm_left),
+      armRight: num(measurement?.arm_right),
       thighs: num(measurement?.thighs),
+      thighLeft: num(measurement?.thigh_left),
+      thighRight: num(measurement?.thigh_right),
       notes: measurement?.notes ?? "",
     },
   });
@@ -176,17 +180,21 @@ export function MeasurementDialog({
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {(
               [
-                ["neck", errors.neck?.message],
-                ["chest", errors.chest?.message],
-                ["waist", errors.waist?.message],
-                ["hips", errors.hips?.message],
-                ["arms", errors.arms?.message],
-                ["thighs", errors.thighs?.message],
+                ["neck", "neck", errors.neck?.message],
+                ["chest", "chest", errors.chest?.message],
+                ["waist", "waist", errors.waist?.message],
+                ["hips", "hips", errors.hips?.message],
+                ["arms", "arms", errors.arms?.message],
+                ["armLeft", "arm_left", errors.armLeft?.message],
+                ["armRight", "arm_right", errors.armRight?.message],
+                ["thighs", "thighs", errors.thighs?.message],
+                ["thighLeft", "thigh_left", errors.thighLeft?.message],
+                ["thighRight", "thigh_right", errors.thighRight?.message],
               ] as const
-            ).map(([name, err]) => (
+            ).map(([name, labelKey, err]) => (
               <Input
                 key={name}
-                label={t(`metric.${name}`)}
+                label={t(`metric.${labelKey}`)}
                 type="number"
                 step="any"
                 inputMode="decimal"

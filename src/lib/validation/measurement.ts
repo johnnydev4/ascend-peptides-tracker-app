@@ -26,7 +26,11 @@ export const measurementSchema = z.object({
   waist: optionalPositive,
   hips: optionalPositive,
   arms: optionalPositive,
+  armLeft: optionalPositive,
+  armRight: optionalPositive,
   thighs: optionalPositive,
+  thighLeft: optionalPositive,
+  thighRight: optionalPositive,
   notes: z.string().max(2000).optional(),
 });
 

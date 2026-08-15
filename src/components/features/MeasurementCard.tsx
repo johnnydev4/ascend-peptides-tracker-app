@@ -38,7 +38,11 @@ export function MeasurementCard({
       ["waist", m.waist],
       ["hips", m.hips],
       ["arms", m.arms],
+      ["arm_left", m.arm_left],
+      ["arm_right", m.arm_right],
       ["thighs", m.thighs],
+      ["thigh_left", m.thigh_left],
+      ["thigh_right", m.thigh_right],
     ] as const
   ).forEach(([key, value]) => {
     if (value != null)
