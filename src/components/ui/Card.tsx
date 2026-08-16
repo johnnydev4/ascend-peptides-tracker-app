@@ -8,7 +8,10 @@ export function Card({
   return (
     <div
       className={cn(
-        "bg-surface border border-line rounded-card shadow-soft",
+        // min-w-0: as a grid/flex child the default `min-width:auto` resolves to
+        // the card's min-content width, which on phones pushes the card wider
+        // than its track and shoves the whole page off-centre.
+        "min-w-0 bg-surface border border-line rounded-card shadow-soft",
         className
       )}
       {...props}

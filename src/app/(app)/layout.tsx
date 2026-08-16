@@ -37,7 +37,7 @@ export default async function AppLayout({
 
       <div className="flex min-w-0 flex-1 flex-col">
         {/* Mobile top bar */}
-        <header className="lg:hidden sticky top-0 z-30 flex items-center justify-between border-b border-line bg-cream/90 backdrop-blur px-4 py-3 pt-[max(0.75rem,env(safe-area-inset-top))]">
+        <header className="lg:hidden sticky top-0 z-30 flex items-center justify-between border-b border-line bg-cream/90 backdrop-blur px-4 sm:px-6 py-3 pt-[max(0.75rem,env(safe-area-inset-top))]">
           <Link href="/dashboard" aria-label="Dashboard">
             <Logo />
           </Link>
