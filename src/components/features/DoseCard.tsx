@@ -3,6 +3,7 @@
 import { Check, Lock, Pencil } from "lucide-react";
 import type { DoseWithRelations } from "@/lib/types";
 import { formatAmount, formatDateTime, isDoseCompletable, cn } from "@/lib/utils";
+import { doseDrawUnits } from "@/lib/calculations/syringe";
 import { Badge, statusTone } from "@/components/ui/Badge";
 import { useI18n } from "@/lib/i18n/context";
 import { statusLabel, siteName } from "@/lib/i18n/labels";
@@ -22,6 +23,10 @@ export function DoseCard({
   const amount = dose.dose_amount ?? dose.treatment?.dose_amount;
   const unit = dose.dose_unit ?? dose.treatment?.dose_unit ?? "";
   const completable = isDoseCompletable(dose.scheduled_at);
+  // A dose can be recorded once its day has arrived — this includes past
+  // "missed" or "skipped" doses the user forgot to complete on the day.
+  const canComplete = dose.status !== "completed" && completable;
+  const draw = doseDrawUnits(dose.treatment, amount, unit);
 
   return (
     <div
@@ -43,6 +48,14 @@ export function DoseCard({
           {formatDateTime(dose.scheduled_at)}
           {dose.injection_site ? ` · ${siteName(t, dose.injection_site)}` : ""}
         </p>
+        {draw && (
+          <p className="mt-0.5 text-xs font-medium text-ink-soft">
+            {t("dose.inUnits", {
+              units: formatAmount(draw.units),
+              syringe: draw.syringe,
+            })}
+          </p>
+        )}
       </div>
 
       <Badge tone={statusTone(dose.status)}>{statusLabel(t, dose.status)}</Badge>
@@ -58,11 +71,20 @@ export function DoseCard({
         </button>
       )}
 
-      {onComplete && dose.status === "scheduled" && completable && (
+      {onComplete && canComplete && (
         <button
           type="button"
           onClick={() => onComplete(dose)}
-          aria-label={t("dash.markCompleted")}
+          aria-label={
+            dose.status === "scheduled"
+              ? t("dash.markCompleted")
+              : t("dose.completePast")
+          }
+          title={
+            dose.status === "scheduled"
+              ? t("dash.markCompleted")
+              : t("dose.completePast")
+          }
           className="flex size-9 items-center justify-center rounded-full border border-line text-muted hover:border-sage hover:bg-sage-soft hover:text-sage transition-colors"
         >
           <Check className="size-4" />

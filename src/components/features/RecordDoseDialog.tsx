@@ -14,7 +14,7 @@ import {
 } from "@/lib/validation/dose";
 import { DOSE_UNITS } from "@/lib/validation/treatment";
 import type { DoseWithRelations, SiteUsageSummary } from "@/lib/types";
-import { formatAmount } from "@/lib/utils";
+import { formatAmount, toDate } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/context";
 import { siteName } from "@/lib/i18n/labels";
 import { Dialog } from "@/components/ui/Dialog";
@@ -42,6 +42,15 @@ export function RecordDoseDialog({
   const recommended = recommendNextSite(siteSummaries);
   const [serverError, setServerError] = useState<string | null>(null);
 
+  // Default the "administered at" to when the dose actually happened: an
+  // already-recorded time if present, otherwise the scheduled day for a past
+  // (missed/forgotten) dose, or now for a dose due today.
+  const defaultAdministeredAt = dose.administered_at
+    ? toDate(dose.administered_at)
+    : toDate(dose.scheduled_at).getTime() < Date.now()
+    ? toDate(dose.scheduled_at)
+    : new Date();
+
   const {
     register,
     handleSubmit,
@@ -52,11 +61,11 @@ export function RecordDoseDialog({
   } = useForm<RecordDoseFormValues, unknown, RecordDoseInput>({
     resolver: zodResolver(recordDoseSchema),
     defaultValues: {
-      administeredAt: format(new Date(), "yyyy-MM-dd'T'HH:mm"),
+      administeredAt: format(defaultAdministeredAt, "yyyy-MM-dd'T'HH:mm"),
       doseAmount: dose.dose_amount ?? dose.treatment?.dose_amount ?? undefined,
       doseUnit: dose.dose_unit ?? dose.treatment?.dose_unit ?? "mg",
-      injectionSiteId: recommended?.site.id ?? "",
-      notes: "",
+      injectionSiteId: dose.injection_site_id ?? recommended?.site.id ?? "",
+      notes: dose.notes ?? "",
     },
   });
 

@@ -43,6 +43,7 @@ import { SideEffectDialog } from "@/components/features/SideEffectDialog";
 import { SideEffectCard } from "@/components/features/SideEffectCard";
 import { DoseCard } from "@/components/features/DoseCard";
 import { InjectionSiteMap } from "@/components/features/InjectionSiteMap";
+import { doseDrawUnits } from "@/lib/calculations/syringe";
 import { useI18n } from "@/lib/i18n/context";
 import { siteName } from "@/lib/i18n/labels";
 
@@ -187,6 +188,24 @@ export function DashboardClient({
                       data.nextDose.treatment?.dose_unit}{" "}
                     · {formatCountdown(data.nextDose.scheduled_at)}
                   </p>
+                  {(() => {
+                    const draw = doseDrawUnits(
+                      data.nextDose.treatment,
+                      data.nextDose.dose_amount ??
+                        data.nextDose.treatment?.dose_amount,
+                      data.nextDose.dose_unit ??
+                        data.nextDose.treatment?.dose_unit
+                    );
+                    return draw ? (
+                      <p className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-tan-faint border border-tan-soft px-2.5 py-1 text-sm font-medium text-ink-soft">
+                        <Syringe className="size-3.5 text-muted" />
+                        {t("dash.drawUnits", {
+                          units: formatAmount(draw.units),
+                          syringe: draw.syringe,
+                        })}
+                      </p>
+                    ) : null;
+                  })()}
                 </div>
                 {isDoseCompletable(data.nextDose.scheduled_at) ? (
                   <Button

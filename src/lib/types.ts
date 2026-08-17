@@ -53,7 +53,17 @@ export interface Dose {
 }
 
 export interface DoseWithRelations extends Dose {
-  treatment?: Pick<Treatment, "id" | "name" | "dose_amount" | "dose_unit"> | null;
+  treatment?: Pick<
+    Treatment,
+    | "id"
+    | "name"
+    | "dose_amount"
+    | "dose_unit"
+    | "vial_quantity"
+    | "vial_unit"
+    | "bac_water_ml"
+    | "syringe_type"
+  > | null;
   injection_site?: Pick<InjectionSite, "id" | "name" | "body_region"> | null;
 }
 

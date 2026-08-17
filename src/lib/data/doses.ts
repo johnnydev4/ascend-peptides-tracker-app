@@ -2,7 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Dose, DoseWithRelations, DoseStatus } from "@/lib/types";
 
 const DOSE_SELECT =
-  "*, treatment:treatments(id, name, dose_amount, dose_unit), injection_site:injection_sites(id, name, body_region)";
+  "*, treatment:treatments(id, name, dose_amount, dose_unit, vial_quantity, vial_unit, bac_water_ml, syringe_type), injection_site:injection_sites(id, name, body_region)";
 
 export interface DoseFilters {
   treatmentId?: string;

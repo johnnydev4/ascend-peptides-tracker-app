@@ -163,6 +163,7 @@ const en: Dict = {
   "dash.createTreatment": "Create treatment",
   "dash.nextDose": "Next dose",
   "dash.markCompleted": "Mark as completed",
+  "dash.drawUnits": "Draw {units} u on your {syringe} syringe",
   "dash.noUpcoming": "No upcoming doses scheduled.",
   "dash.reviewTreatments": "Review your treatments",
   "dash.treatmentProgress": "Treatment progress",
@@ -267,6 +268,8 @@ const en: Dict = {
   "dose.next7": "Next 7 days",
   "dose.nothingScheduledDesc": "Doses appear here once a treatment is active.",
   "dose.notYetAvailable": "Available on the dose day (today or tomorrow only).",
+  "dose.inUnits": "{units} u · {syringe}",
+  "dose.completePast": "Complete this dose",
 
   // Record page
   "rec.title": "Record a dose",
@@ -759,6 +762,7 @@ const es: Dict = {
   "dash.createTreatment": "Crear tratamiento",
   "dash.nextDose": "Próxima dosis",
   "dash.markCompleted": "Marcar como completada",
+  "dash.drawUnits": "Carga {units} u en tu jeringa {syringe}",
   "dash.noUpcoming": "No hay dosis próximas programadas.",
   "dash.reviewTreatments": "Revisa tus tratamientos",
   "dash.treatmentProgress": "Progreso del tratamiento",
@@ -866,6 +870,8 @@ const es: Dict = {
     "Las dosis aparecen aquí cuando hay un tratamiento activo.",
   "dose.notYetAvailable":
     "Disponible el día de la dosis (solo hoy o mañana).",
+  "dose.inUnits": "{units} u · {syringe}",
+  "dose.completePast": "Completar esta dosis",
 
   // Record page
   "rec.title": "Registrar una dosis",

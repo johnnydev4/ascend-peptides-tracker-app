@@ -161,3 +161,37 @@ export function doseInSyringeUnits(params: {
 export function roundUnits(value: number): number {
   return Math.round(value * 100) / 100;
 }
+
+/**
+ * Convenience wrapper for UI: given a treatment's reconstitution fields and a
+ * concrete dose, returns the rounded syringe units to draw and the syringe type
+ * — or null when the treatment wasn't reconstituted with exact figures (no
+ * BAC water / syringe) or the dose isn't a mass we can convert.
+ */
+export function doseDrawUnits(
+  treatment:
+    | {
+        vial_quantity: number | null;
+        vial_unit: string;
+        bac_water_ml: number | null;
+        syringe_type: string | null;
+      }
+    | null
+    | undefined,
+  doseAmount: number | null | undefined,
+  doseUnit: string | null | undefined
+): { units: number; syringe: SyringeType } | null {
+  const syringe = treatment?.syringe_type;
+  if (!syringe || !SYRINGE_TYPES.includes(syringe as SyringeType)) return null;
+  if (doseAmount == null || !Number.isFinite(doseAmount)) return null;
+  const units = doseInSyringeUnits({
+    vialQuantity: treatment!.vial_quantity,
+    vialUnit: treatment!.vial_unit,
+    bacWaterMl: treatment!.bac_water_ml,
+    doseAmount,
+    doseUnit: doseUnit ?? "",
+    syringe: syringe as SyringeType,
+  });
+  if (units === null) return null;
+  return { units: roundUnits(units), syringe: syringe as SyringeType };
+}
