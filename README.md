@@ -4,11 +4,13 @@
 treatment protocol** — dose scheduling, injection-site rotation, side-effect
 records, reconstitution math, body-transition tracking, and progress charts.
 
-### 🔴 [**Live demo → ascend-peptides-tracker-app.vercel.app**](https://ascend-peptides-tracker-app.vercel.app)
+### 🔴 [**Live demo → ascend-tracker-demo.vercel.app**](https://ascend-tracker-demo.vercel.app)
 
-Open the live app and create a free account to explore every feature with your
-own data. Prefer zero setup? Run it locally in **demo mode** (below) — a fully
-seeded sample protocol, no account and no backend required.
+**No sign-up, no backend.** The live demo opens straight into a fully seeded
+sample protocol (a Retatrutide treatment already in week 4) running entirely in
+your browser via `localStorage`. Click around freely — every feature works, and
+**Settings → Reset demo data** starts it over. Want to use it for real? Run your
+own instance with a Supabase backend (see [Getting started](#getting-started)).
 
 > Ascend Tracker is a **tracking and organization tool**, not medical advice.
 > Severe or concerning symptoms should be discussed with a qualified
