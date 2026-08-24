@@ -8,6 +8,8 @@ import {
   Sparkles,
   ArrowRight,
   Plus,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { differenceInCalendarWeeks, isSameDay } from "date-fns";
 import { createClient } from "@/lib/supabase/client";
@@ -130,13 +132,9 @@ export function DashboardClient({
     return list.filter((d) => isSameDay(new Date(d.scheduled_at), firstDay));
   }, [data]);
 
+  // Keep the selected index valid when the dose list changes.
   useEffect(() => {
-    if (dayDoses.length <= 1) return;
-    const id = setInterval(
-      () => setDoseIndex((i) => (i + 1) % dayDoses.length),
-      5000
-    );
-    return () => clearInterval(id);
+    setDoseIndex((i) => (dayDoses.length > 0 ? i % dayDoses.length : 0));
   }, [dayDoses.length]);
 
   const stats = useMemo(() => {
@@ -206,14 +204,15 @@ export function DashboardClient({
         {greeting()}, {displayName}
       </h1>
 
-      <div className="grid items-start gap-4 lg:grid-cols-3">
+      <div className="grid gap-4 lg:grid-cols-3">
         {/* Next dose */}
-        <Card className="lg:col-span-2">
+        <Card className="flex flex-col lg:col-span-2">
           <CardHeader title={t("dash.nextDose")} />
-          <CardBody>
+          <CardBody className="flex flex-1 flex-col">
             {displayDose ? (
-              <div className="flex flex-wrap items-center justify-between gap-4">
-                <div>
+              <>
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                  <div>
                   <p className="text-2xl font-semibold tracking-tight text-ink">
                     {formatDateTime(displayDose.scheduled_at)}
                   </p>
@@ -246,24 +245,7 @@ export function DashboardClient({
                       </p>
                     ) : null;
                   })()}
-                  {dayDoses.length > 1 && (
-                    <div className="mt-3 flex items-center gap-1.5">
-                      {dayDoses.map((d, i) => (
-                        <button
-                          key={d.id}
-                          type="button"
-                          onClick={() => setDoseIndex(i)}
-                          aria-label={`${i + 1}/${dayDoses.length}`}
-                          className={`h-1.5 rounded-full transition-all ${
-                            i === doseIndex % dayDoses.length
-                              ? "w-5 bg-ink"
-                              : "w-1.5 bg-tan-soft hover:bg-muted"
-                          }`}
-                        />
-                      ))}
-                    </div>
-                  )}
-                </div>
+                  </div>
                 {isDoseCompletable(displayDose.scheduled_at) ? (
                   <Button
                     onClick={() => {
@@ -278,7 +260,37 @@ export function DashboardClient({
                     {t("dose.notYetAvailable")}
                   </p>
                 )}
-              </div>
+                </div>
+                {dayDoses.length > 1 && (
+                  <div className="mt-auto flex items-center gap-3 pt-6">
+                    <button
+                      type="button"
+                      aria-label={t("common.prev")}
+                      onClick={() =>
+                        setDoseIndex(
+                          (i) => (i - 1 + dayDoses.length) % dayDoses.length
+                        )
+                      }
+                      className="flex size-8 items-center justify-center rounded-full border border-line text-muted transition-colors hover:border-tan-soft hover:text-ink"
+                    >
+                      <ChevronLeft className="size-4" />
+                    </button>
+                    <span className="text-xs font-medium tabular-nums text-muted">
+                      {(doseIndex % dayDoses.length) + 1} / {dayDoses.length}
+                    </span>
+                    <button
+                      type="button"
+                      aria-label={t("common.next")}
+                      onClick={() =>
+                        setDoseIndex((i) => (i + 1) % dayDoses.length)
+                      }
+                      className="flex size-8 items-center justify-center rounded-full border border-line text-muted transition-colors hover:border-tan-soft hover:text-ink"
+                    >
+                      <ChevronRight className="size-4" />
+                    </button>
+                  </div>
+                )}
+              </>
             ) : (
               <p className="text-sm text-muted py-2">
                 {t("dash.noUpcoming")}{" "}
