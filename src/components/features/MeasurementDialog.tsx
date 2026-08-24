@@ -23,7 +23,7 @@ import { Button } from "@/components/ui/Button";
 import { Input, Select, Textarea } from "@/components/ui/Field";
 import { DateField } from "@/components/ui/DateTimePicker";
 
-const MAX_PHOTOS = 6;
+const MAX_PHOTOS = 10;
 
 export function MeasurementDialog({
   measurement,

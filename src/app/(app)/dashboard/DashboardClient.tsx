@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   Syringe,
@@ -69,34 +69,72 @@ export function DashboardClient({
     null
   );
 
+  const [doseIndex, setDoseIndex] = useState(0);
+
   const { data, loading, refresh } = useAsyncData(async () => {
     const supabase = createClient();
     await Promise.all([
       ensureDefaultSites(supabase, userId),
       sweepMissedDoses(supabase),
     ]);
-    const [nextDose, treatments, allDoses, siteSummaries, sideEffects, upcoming] =
-      await Promise.all([
-        getNextScheduledDose(supabase),
-        listTreatments(supabase),
-        supabase
-          .from("doses")
-          .select("id, status, scheduled_at, treatment_id")
-          .then(({ data: rows, error }) => {
-            if (error) throw error;
-            return rows ?? [];
-          }),
-        getSiteUsageSummaries(supabase),
-        listSideEffects(supabase, { limit: 3 }),
-        listDoses(supabase, {
-          status: "scheduled",
-          from: new Date().toISOString(),
-          limit: 4,
-          ascending: true,
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+    const endOfToday = new Date();
+    endOfToday.setHours(23, 59, 59, 999);
+    const [
+      nextDose,
+      treatments,
+      allDoses,
+      siteSummaries,
+      sideEffects,
+      upcoming,
+      todayDoses,
+    ] = await Promise.all([
+      getNextScheduledDose(supabase),
+      listTreatments(supabase),
+      supabase
+        .from("doses")
+        .select("id, status, scheduled_at, treatment_id")
+        .then(({ data: rows, error }) => {
+          if (error) throw error;
+          return rows ?? [];
         }),
-      ]);
-    return { nextDose, treatments, allDoses, siteSummaries, sideEffects, upcoming };
+      getSiteUsageSummaries(supabase),
+      listSideEffects(supabase, { limit: 3 }),
+      listDoses(supabase, {
+        status: "scheduled",
+        from: new Date().toISOString(),
+        limit: 4,
+        ascending: true,
+      }),
+      listDoses(supabase, {
+        status: "scheduled",
+        from: startOfToday.toISOString(),
+        to: endOfToday.toISOString(),
+        ascending: true,
+      }),
+    ]);
+    return {
+      nextDose,
+      treatments,
+      allDoses,
+      siteSummaries,
+      sideEffects,
+      upcoming,
+      todayDoses,
+    };
   }, [userId]);
+
+  // Rotate the header through every dose scheduled for today.
+  const todayCount = data?.todayDoses.length ?? 0;
+  useEffect(() => {
+    if (todayCount <= 1) return;
+    const id = setInterval(
+      () => setDoseIndex((i) => (i + 1) % todayCount),
+      5000
+    );
+    return () => clearInterval(id);
+  }, [todayCount]);
 
   const stats = useMemo(() => {
     if (!data) return null;
@@ -116,24 +154,25 @@ export function DashboardClient({
 
   if (loading || !data || !stats) return <Spinner />;
 
-  const activeTreatment =
-    data.treatments.find((t) => t.status === "active") ?? data.treatments[0];
-  const treatmentDoses = activeTreatment
-    ? data.allDoses.filter((d) => d.treatment_id === activeTreatment.id)
-    : [];
-  const treatmentCompleted = treatmentDoses.filter(
-    (d) => d.status === "completed"
-  ).length;
-  const progressPct =
-    treatmentDoses.length > 0
-      ? (treatmentCompleted / treatmentDoses.length) * 100
-      : 0;
-  const currentWeek = activeTreatment
-    ? Math.min(
-        differenceInCalendarWeeks(new Date(), new Date(activeTreatment.start_date)) + 1,
-        activeTreatment.duration_weeks ?? Infinity
-      )
-    : null;
+  // Header rotates through today's doses; falls back to the next upcoming one.
+  const displayDose =
+    data.todayDoses.length > 0
+      ? data.todayDoses[doseIndex % data.todayDoses.length]
+      : data.nextDose;
+
+  // Every treatment currently in progress (paused/completed/archived excluded).
+  const activeTreatments = data.treatments
+    .filter((tr) => tr.status === "active")
+    .map((tr) => {
+      const doses = data.allDoses.filter((d) => d.treatment_id === tr.id);
+      const completed = doses.filter((d) => d.status === "completed").length;
+      const progressPct = doses.length > 0 ? (completed / doses.length) * 100 : 0;
+      const currentWeek = Math.min(
+        differenceInCalendarWeeks(new Date(), new Date(tr.start_date)) + 1,
+        tr.duration_weeks ?? Infinity
+      );
+      return { treatment: tr, doses, completed, progressPct, currentWeek };
+    });
   const recommended = recommendNextSite(data.siteSummaries);
 
   if (data.treatments.length === 0) {
@@ -171,30 +210,30 @@ export function DashboardClient({
         <Card className="lg:col-span-2">
           <CardHeader title={t("dash.nextDose")} />
           <CardBody>
-            {data.nextDose ? (
+            {displayDose ? (
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>
                   <p className="text-2xl font-semibold tracking-tight text-ink">
-                    {formatDateTime(data.nextDose.scheduled_at)}
+                    {formatDateTime(displayDose.scheduled_at)}
                   </p>
                   <p className="mt-1 text-sm text-muted">
-                    {data.nextDose.treatment?.name} ·{" "}
+                    {displayDose.treatment?.name} ·{" "}
                     {formatAmount(
-                      data.nextDose.dose_amount ??
-                        data.nextDose.treatment?.dose_amount ??
+                      displayDose.dose_amount ??
+                        displayDose.treatment?.dose_amount ??
                         0
                     )}{" "}
-                    {data.nextDose.dose_unit ??
-                      data.nextDose.treatment?.dose_unit}{" "}
-                    · {formatCountdown(data.nextDose.scheduled_at)}
+                    {displayDose.dose_unit ??
+                      displayDose.treatment?.dose_unit}{" "}
+                    · {formatCountdown(displayDose.scheduled_at)}
                   </p>
                   {(() => {
                     const draw = doseDrawUnits(
-                      data.nextDose.treatment,
-                      data.nextDose.dose_amount ??
-                        data.nextDose.treatment?.dose_amount,
-                      data.nextDose.dose_unit ??
-                        data.nextDose.treatment?.dose_unit
+                      displayDose.treatment,
+                      displayDose.dose_amount ??
+                        displayDose.treatment?.dose_amount,
+                      displayDose.dose_unit ??
+                        displayDose.treatment?.dose_unit
                     );
                     return draw ? (
                       <p className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-tan-faint border border-tan-soft px-2.5 py-1 text-sm font-medium text-ink-soft">
@@ -206,11 +245,28 @@ export function DashboardClient({
                       </p>
                     ) : null;
                   })()}
+                  {data.todayDoses.length > 1 && (
+                    <div className="mt-3 flex items-center gap-1.5">
+                      {data.todayDoses.map((d, i) => (
+                        <button
+                          key={d.id}
+                          type="button"
+                          onClick={() => setDoseIndex(i)}
+                          aria-label={`${i + 1}/${data.todayDoses.length}`}
+                          className={`h-1.5 rounded-full transition-all ${
+                            i === doseIndex % data.todayDoses.length
+                              ? "w-5 bg-ink"
+                              : "w-1.5 bg-tan-soft hover:bg-muted"
+                          }`}
+                        />
+                      ))}
+                    </div>
+                  )}
                 </div>
-                {isDoseCompletable(data.nextDose.scheduled_at) ? (
+                {isDoseCompletable(displayDose.scheduled_at) ? (
                   <Button
                     onClick={() => {
-                      setDoseToRecord(data.nextDose);
+                      setDoseToRecord(displayDose);
                       setRecordOpen(true);
                     }}
                   >
@@ -240,40 +296,46 @@ export function DashboardClient({
         <Card>
           <CardHeader title={t("dash.treatmentProgress")} />
           <CardBody>
-            {activeTreatment ? (
-              <>
-                <div className="flex items-baseline justify-between">
-                  <p className="text-sm font-medium text-ink">
-                    {activeTreatment.name}
-                  </p>
-                  {currentWeek && activeTreatment.duration_weeks ? (
-                    <p className="text-xs text-muted">
-                      {t("dash.weekOf", {
-                        n: Math.max(1, currentWeek),
-                        total: activeTreatment.duration_weeks,
-                      })}
-                    </p>
-                  ) : null}
-                </div>
-                <div className="mt-3">
-                  <ProgressBar value={progressPct} />
-                  <div className="mt-2 flex items-center justify-between text-xs text-muted">
-                    <span>
-                      {t("dash.dosesOf", {
-                        completed: treatmentCompleted,
-                        total: treatmentDoses.length,
-                      })}
-                    </span>
-                    <span>{Math.round(progressPct)}%</span>
-                  </div>
-                </div>
-                <p className="mt-4 text-xs text-muted">
-                  {formatFullDate(activeTreatment.start_date)}
-                  {activeTreatment.end_date
-                    ? ` → ${formatFullDate(activeTreatment.end_date)}`
-                    : ""}
-                </p>
-              </>
+            {activeTreatments.length > 0 ? (
+              <div className="space-y-5">
+                {activeTreatments.map(
+                  ({ treatment, completed, doses, progressPct, currentWeek }) => (
+                    <div key={treatment.id}>
+                      <div className="flex items-baseline justify-between">
+                        <p className="text-sm font-medium text-ink">
+                          {treatment.name}
+                        </p>
+                        {currentWeek && treatment.duration_weeks ? (
+                          <p className="text-xs text-muted">
+                            {t("dash.weekOf", {
+                              n: Math.max(1, currentWeek),
+                              total: treatment.duration_weeks,
+                            })}
+                          </p>
+                        ) : null}
+                      </div>
+                      <div className="mt-3">
+                        <ProgressBar value={progressPct} />
+                        <div className="mt-2 flex items-center justify-between text-xs text-muted">
+                          <span>
+                            {t("dash.dosesOf", {
+                              completed,
+                              total: doses.length,
+                            })}
+                          </span>
+                          <span>{Math.round(progressPct)}%</span>
+                        </div>
+                      </div>
+                      <p className="mt-2 text-xs text-muted">
+                        {formatFullDate(treatment.start_date)}
+                        {treatment.end_date
+                          ? ` → ${formatFullDate(treatment.end_date)}`
+                          : ""}
+                      </p>
+                    </div>
+                  )
+                )}
+              </div>
             ) : (
               <p className="text-sm text-muted">{t("dash.noActive")}</p>
             )}
