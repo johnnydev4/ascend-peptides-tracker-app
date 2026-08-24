@@ -9,7 +9,7 @@ import {
   ArrowRight,
   Plus,
 } from "lucide-react";
-import { differenceInCalendarWeeks } from "date-fns";
+import { differenceInCalendarWeeks, isSameDay } from "date-fns";
 import { createClient } from "@/lib/supabase/client";
 import { useAsyncData } from "@/hooks/useAsyncData";
 import { listTreatments } from "@/lib/data/treatments";
@@ -77,10 +77,6 @@ export function DashboardClient({
       ensureDefaultSites(supabase, userId),
       sweepMissedDoses(supabase),
     ]);
-    const startOfToday = new Date();
-    startOfToday.setHours(0, 0, 0, 0);
-    const endOfToday = new Date();
-    endOfToday.setHours(23, 59, 59, 999);
     const [
       nextDose,
       treatments,
@@ -88,7 +84,7 @@ export function DashboardClient({
       siteSummaries,
       sideEffects,
       upcoming,
-      todayDoses,
+      headerDoses,
     ] = await Promise.all([
       getNextScheduledDose(supabase),
       listTreatments(supabase),
@@ -109,8 +105,8 @@ export function DashboardClient({
       }),
       listDoses(supabase, {
         status: "scheduled",
-        from: startOfToday.toISOString(),
-        to: endOfToday.toISOString(),
+        from: new Date(Date.now() - 12 * 3600_000).toISOString(),
+        limit: 30,
         ascending: true,
       }),
     ]);
@@ -121,20 +117,27 @@ export function DashboardClient({
       siteSummaries,
       sideEffects,
       upcoming,
-      todayDoses,
+      headerDoses,
     };
   }, [userId]);
 
-  // Rotate the header through every dose scheduled for today.
-  const todayCount = data?.todayDoses.length ?? 0;
+  // All scheduled doses sharing the day of the next upcoming dose — the header
+  // rotates through these (handles multiple doses on the same day).
+  const dayDoses = useMemo(() => {
+    const list = data?.headerDoses ?? [];
+    if (list.length === 0) return [];
+    const firstDay = new Date(list[0].scheduled_at);
+    return list.filter((d) => isSameDay(new Date(d.scheduled_at), firstDay));
+  }, [data]);
+
   useEffect(() => {
-    if (todayCount <= 1) return;
+    if (dayDoses.length <= 1) return;
     const id = setInterval(
-      () => setDoseIndex((i) => (i + 1) % todayCount),
+      () => setDoseIndex((i) => (i + 1) % dayDoses.length),
       5000
     );
     return () => clearInterval(id);
-  }, [todayCount]);
+  }, [dayDoses.length]);
 
   const stats = useMemo(() => {
     if (!data) return null;
@@ -154,11 +157,9 @@ export function DashboardClient({
 
   if (loading || !data || !stats) return <Spinner />;
 
-  // Header rotates through today's doses; falls back to the next upcoming one.
+  // Header rotates through the next day's doses; falls back to the next one.
   const displayDose =
-    data.todayDoses.length > 0
-      ? data.todayDoses[doseIndex % data.todayDoses.length]
-      : data.nextDose;
+    dayDoses.length > 0 ? dayDoses[doseIndex % dayDoses.length] : data.nextDose;
 
   // Every treatment currently in progress (paused/completed/archived excluded).
   const activeTreatments = data.treatments
@@ -205,7 +206,7 @@ export function DashboardClient({
         {greeting()}, {displayName}
       </h1>
 
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="grid items-start gap-4 lg:grid-cols-3">
         {/* Next dose */}
         <Card className="lg:col-span-2">
           <CardHeader title={t("dash.nextDose")} />
@@ -245,16 +246,16 @@ export function DashboardClient({
                       </p>
                     ) : null;
                   })()}
-                  {data.todayDoses.length > 1 && (
+                  {dayDoses.length > 1 && (
                     <div className="mt-3 flex items-center gap-1.5">
-                      {data.todayDoses.map((d, i) => (
+                      {dayDoses.map((d, i) => (
                         <button
                           key={d.id}
                           type="button"
                           onClick={() => setDoseIndex(i)}
-                          aria-label={`${i + 1}/${data.todayDoses.length}`}
+                          aria-label={`${i + 1}/${dayDoses.length}`}
                           className={`h-1.5 rounded-full transition-all ${
-                            i === doseIndex % data.todayDoses.length
+                            i === doseIndex % dayDoses.length
                               ? "w-5 bg-ink"
                               : "w-1.5 bg-tan-soft hover:bg-muted"
                           }`}
