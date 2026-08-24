@@ -10,6 +10,7 @@ import {
   Plus,
   ChevronLeft,
   ChevronRight,
+  MapPin,
 } from "lucide-react";
 import { differenceInCalendarWeeks, isSameDay } from "date-fns";
 import { createClient } from "@/lib/supabase/client";
@@ -87,6 +88,7 @@ export function DashboardClient({
       sideEffects,
       upcoming,
       headerDoses,
+      completedDoses,
     ] = await Promise.all([
       getNextScheduledDose(supabase),
       listTreatments(supabase),
@@ -111,6 +113,7 @@ export function DashboardClient({
         limit: 30,
         ascending: true,
       }),
+      listDoses(supabase, { status: "completed", limit: 60 }),
     ]);
     return {
       nextDose,
@@ -120,6 +123,7 @@ export function DashboardClient({
       sideEffects,
       upcoming,
       headerDoses,
+      completedDoses,
     };
   }, [userId]);
 
@@ -158,6 +162,14 @@ export function DashboardClient({
   // Header rotates through the next day's doses; falls back to the next one.
   const displayDose =
     dayDoses.length > 0 ? dayDoses[doseIndex % dayDoses.length] : data.nextDose;
+
+  // Most recent completed dose of this peptide that recorded an injection site.
+  const lastSiteDose = displayDose
+    ? data.completedDoses.find(
+        (d) =>
+          d.treatment_id === displayDose.treatment_id && d.injection_site != null
+      )
+    : null;
 
   // Every treatment currently in progress (paused/completed/archived excluded).
   const activeTreatments = data.treatments
@@ -261,35 +273,45 @@ export function DashboardClient({
                   </p>
                 )}
                 </div>
-                {dayDoses.length > 1 && (
-                  <div className="mt-auto flex items-center gap-3 pt-6">
-                    <button
-                      type="button"
-                      aria-label={t("common.prev")}
-                      onClick={() =>
-                        setDoseIndex(
-                          (i) => (i - 1 + dayDoses.length) % dayDoses.length
-                        )
-                      }
-                      className="flex size-8 items-center justify-center rounded-full border border-line text-muted transition-colors hover:border-tan-soft hover:text-ink"
-                    >
-                      <ChevronLeft className="size-4" />
-                    </button>
-                    <span className="text-xs font-medium tabular-nums text-muted">
-                      {(doseIndex % dayDoses.length) + 1} / {dayDoses.length}
-                    </span>
-                    <button
-                      type="button"
-                      aria-label={t("common.next")}
-                      onClick={() =>
-                        setDoseIndex((i) => (i + 1) % dayDoses.length)
-                      }
-                      className="flex size-8 items-center justify-center rounded-full border border-line text-muted transition-colors hover:border-tan-soft hover:text-ink"
-                    >
-                      <ChevronRight className="size-4" />
-                    </button>
-                  </div>
-                )}
+                <div className="mt-auto flex items-center justify-between gap-3 pt-6">
+                  <p className="inline-flex items-center gap-1.5 text-sm text-muted">
+                    <MapPin className="size-3.5 shrink-0 text-muted" />
+                    {lastSiteDose?.injection_site
+                      ? t("dash.lastSite", {
+                          name: siteName(t, lastSiteDose.injection_site),
+                        })
+                      : t("dash.noSiteYet")}
+                  </p>
+                  {dayDoses.length > 1 && (
+                    <div className="flex shrink-0 items-center gap-3">
+                      <button
+                        type="button"
+                        aria-label={t("common.prev")}
+                        onClick={() =>
+                          setDoseIndex(
+                            (i) => (i - 1 + dayDoses.length) % dayDoses.length
+                          )
+                        }
+                        className="flex size-8 items-center justify-center rounded-full border border-line text-muted transition-colors hover:border-tan-soft hover:text-ink"
+                      >
+                        <ChevronLeft className="size-4" />
+                      </button>
+                      <span className="text-xs font-medium tabular-nums text-muted">
+                        {(doseIndex % dayDoses.length) + 1} / {dayDoses.length}
+                      </span>
+                      <button
+                        type="button"
+                        aria-label={t("common.next")}
+                        onClick={() =>
+                          setDoseIndex((i) => (i + 1) % dayDoses.length)
+                        }
+                        className="flex size-8 items-center justify-center rounded-full border border-line text-muted transition-colors hover:border-tan-soft hover:text-ink"
+                      >
+                        <ChevronRight className="size-4" />
+                      </button>
+                    </div>
+                  )}
+                </div>
               </>
             ) : (
               <p className="text-sm text-muted py-2">
