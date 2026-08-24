@@ -223,7 +223,7 @@ export function DashboardClient({
           <CardBody className="flex flex-1 flex-col">
             {displayDose ? (
               <>
-                <div className="flex flex-wrap items-center justify-between gap-4">
+                <div className="my-auto flex flex-wrap items-center justify-between gap-4">
                   <div>
                   <p className="text-2xl font-semibold tracking-tight text-ink">
                     {formatDateTime(displayDose.scheduled_at)}
@@ -273,7 +273,7 @@ export function DashboardClient({
                   </p>
                 )}
                 </div>
-                <div className="mt-auto flex items-center justify-between gap-3 pt-6">
+                <div className="flex items-center justify-between gap-3 pt-6">
                   <p className="inline-flex items-center gap-1.5 text-sm text-muted">
                     <MapPin className="size-3.5 shrink-0 text-muted" />
                     {lastSiteDose?.injection_site
