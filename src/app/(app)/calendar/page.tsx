@@ -230,7 +230,11 @@ export default function CalendarPage() {
                   key={dose.id}
                   dose={dose}
                   onComplete={setDoseToRecord}
-                  onEdit={setDoseToEdit}
+                  onEdit={(d) =>
+                    d.status === "completed"
+                      ? setDoseToRecord(d)
+                      : setDoseToEdit(d)
+                  }
                 />
               ))
             ) : (

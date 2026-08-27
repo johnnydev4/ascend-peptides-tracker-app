@@ -93,6 +93,14 @@ export async function completeDose(
     .eq("id", doseId);
   if (error) throw error;
 
+  // Re-recording an already-completed dose (an edit) would otherwise stack up
+  // duplicate usage rows, so clear this dose's prior usage before re-inserting.
+  const { error: clearUsageError } = await supabase
+    .from("injection_site_usage")
+    .delete()
+    .eq("dose_id", doseId);
+  if (clearUsageError) throw clearUsageError;
+
   if (params.injectionSiteId) {
     const { error: usageError } = await supabase
       .from("injection_site_usage")

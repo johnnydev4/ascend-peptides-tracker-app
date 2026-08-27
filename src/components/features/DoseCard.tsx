@@ -60,7 +60,7 @@ export function DoseCard({
 
       <Badge tone={statusTone(dose.status)}>{statusLabel(t, dose.status)}</Badge>
 
-      {onEdit && dose.status !== "completed" && (
+      {onEdit && (
         <button
           type="button"
           onClick={() => onEdit(dose)}

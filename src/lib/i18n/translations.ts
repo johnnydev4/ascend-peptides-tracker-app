@@ -285,6 +285,7 @@ const en: Dict = {
 
   // Record dose dialog
   "rdd.title": "Record dose — {name}",
+  "rdd.editTitle": "Edit recorded dose — {name}",
   "rdd.amount": "Amount",
   "rdd.unit": "Unit",
   "rdd.administeredAt": "Administered at",
@@ -891,6 +892,7 @@ const es: Dict = {
 
   // Record dose dialog
   "rdd.title": "Registrar dosis — {name}",
+  "rdd.editTitle": "Editar dosis registrada — {name}",
   "rdd.amount": "Cantidad",
   "rdd.unit": "Unidad",
   "rdd.administeredAt": "Administrada el",

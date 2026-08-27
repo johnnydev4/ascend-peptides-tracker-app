@@ -41,6 +41,8 @@ export function RecordDoseDialog({
   const { t } = useI18n();
   const recommended = recommendNextSite(siteSummaries);
   const [serverError, setServerError] = useState<string | null>(null);
+  // Editing an already-recorded dose reuses this same form; only the labels change.
+  const isEditing = dose.status === "completed";
 
   // Default the "administered at" to when the dose actually happened: an
   // already-recorded time if present, otherwise the scheduled day for a past
@@ -96,7 +98,9 @@ export function RecordDoseDialog({
     <Dialog
       open={open}
       onClose={onClose}
-      title={t("rdd.title", { name: dose.treatment?.name ?? t("hist.treatment") })}
+      title={t(isEditing ? "rdd.editTitle" : "rdd.title", {
+        name: dose.treatment?.name ?? t("hist.treatment"),
+      })}
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
         <div className="grid grid-cols-2 gap-3">
@@ -183,8 +187,10 @@ export function RecordDoseDialog({
             {t("common.cancel")}
           </Button>
           <Button type="submit" loading={isSubmitting}>
-            {t("rdd.markCompleted")}
-            {dose.dose_amount ? ` · ${formatAmount(dose.dose_amount)} ${dose.dose_unit}` : ""}
+            {isEditing ? t("common.saveChanges") : t("rdd.markCompleted")}
+            {!isEditing && dose.dose_amount
+              ? ` · ${formatAmount(dose.dose_amount)} ${dose.dose_unit}`
+              : ""}
           </Button>
         </div>
       </form>
