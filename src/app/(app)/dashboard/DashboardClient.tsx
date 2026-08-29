@@ -218,10 +218,7 @@ export function DashboardClient({
       </h1>
 
       <div className="grid gap-4 lg:grid-cols-3">
-        {/* Next dose + needle stock share the 2-column span, side by side in a
-            single row (stacked on narrow screens), so neither card has to
-            stretch with whitespace. */}
-        <div className="grid gap-4 sm:grid-cols-2 lg:col-span-2">
+        {/* Next dose */}
         <Card className="flex flex-col">
           <CardHeader title={t("dash.nextDose")} />
           <CardBody className="flex flex-1 flex-col justify-center">
@@ -333,7 +330,6 @@ export function DashboardClient({
 
         {/* Needle stock */}
         <NeedleInventoryPanel />
-        </div>
 
         {/* Treatment progress */}
         <Card>
