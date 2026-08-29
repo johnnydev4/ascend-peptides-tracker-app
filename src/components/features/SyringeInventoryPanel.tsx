@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { Minus, Plus, Pencil, Bell, TriangleAlert } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
 import {
-  getNeedlePreferences,
-  saveNeedlePreferences,
-  type NeedlePreferences,
-} from "@/lib/notifications/preferences";
+  getSyringeInventory,
+  upsertSyringeInventory,
+  type SyringeInventoryInput,
+} from "@/lib/data/syringes";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Dialog } from "@/components/ui/Dialog";
@@ -14,44 +15,79 @@ import { Input, Select, Textarea } from "@/components/ui/Field";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/context";
 
-const NEEDLE_TYPES = ["29G", "30G", "31G", "32G", "34G"];
+const SYRINGE_TYPES = ["U-100", "U-40", "U-500", "29G", "30G", "31G", "32G"];
 
-export function NeedleInventoryPanel() {
+const EMPTY: SyringeInventoryInput = {
+  count: 0,
+  syringe_type: "",
+  note: "",
+  low_stock_threshold: 5,
+  reminder_enabled: false,
+};
+
+export function SyringeInventoryPanel({ userId }: { userId: string }) {
   const { t } = useI18n();
-  const [prefs, setPrefs] = useState<NeedlePreferences | null>(null);
+  const [inv, setInv] = useState<SyringeInventoryInput | null>(null);
   const [editOpen, setEditOpen] = useState(false);
 
-  // Load device-local prefs after mount (localStorage is client-only).
+  // Load the user's inventory from Supabase (syncs across devices).
   useEffect(() => {
-    setPrefs(getNeedlePreferences());
+    let cancelled = false;
+    (async () => {
+      try {
+        const row = await getSyringeInventory(createClient());
+        if (cancelled) return;
+        setInv(
+          row
+            ? {
+                count: row.count,
+                syringe_type: row.syringe_type,
+                note: row.note,
+                low_stock_threshold: row.low_stock_threshold,
+                reminder_enabled: row.reminder_enabled,
+              }
+            : EMPTY
+        );
+      } catch {
+        if (!cancelled) setInv(EMPTY);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  const update = (next: NeedlePreferences) => {
-    setPrefs(next);
-    saveNeedlePreferences(next);
+  // Optimistically update the UI, then persist to the DB.
+  const persist = async (next: SyringeInventoryInput) => {
+    setInv(next);
+    try {
+      await upsertSyringeInventory(createClient(), userId, next);
+    } catch {
+      // best-effort; the local view already reflects the change
+    }
   };
 
   const adjust = (delta: number) => {
-    if (!prefs) return;
-    update({ ...prefs, count: Math.max(0, prefs.count + delta) });
+    if (!inv) return;
+    void persist({ ...inv, count: Math.max(0, inv.count + delta) });
   };
 
-  if (!prefs) {
+  if (!inv) {
     return (
-      <Card className="flex-1">
-        <CardHeader title={t("needle.title")} />
+      <Card className="flex flex-col">
+        <CardHeader title={t("syringe.title")} />
         <CardBody />
       </Card>
     );
   }
 
-  const low = prefs.count <= prefs.threshold;
-  const empty = prefs.count === 0;
+  const low = inv.count <= inv.low_stock_threshold;
+  const empty = inv.count === 0;
 
   return (
-    <Card className="flex flex-1 flex-col">
+    <Card className="flex flex-col">
       <CardHeader
-        title={t("needle.title")}
+        title={t("syringe.title")}
         action={
           <button
             type="button"
@@ -73,7 +109,7 @@ export function NeedleInventoryPanel() {
                     "text-terracotta text-5xl font-extrabold animate-pulse drop-shadow-sm"
                 )}
               >
-                {prefs.count}
+                {inv.count}
               </span>
               <span
                 className={cn(
@@ -81,20 +117,20 @@ export function NeedleInventoryPanel() {
                   low && "font-semibold text-terracotta"
                 )}
               >
-                {t("needle.unit")}
+                {t("syringe.unit")}
               </span>
             </div>
             <p className="mt-1 truncate text-sm text-muted">
-              {prefs.needleType
-                ? t("needle.typeLabel", { type: prefs.needleType })
-                : t("needle.noType")}
+              {inv.syringe_type
+                ? t("syringe.typeLabel", { type: inv.syringe_type })
+                : t("syringe.noType")}
             </p>
           </div>
 
           <div className="flex shrink-0 items-center gap-2">
             <button
               type="button"
-              aria-label={t("needle.decrement")}
+              aria-label={t("syringe.decrement")}
               onClick={() => adjust(-1)}
               disabled={empty}
               className="flex size-10 items-center justify-center rounded-full border border-line text-ink transition-colors hover:border-tan-soft hover:bg-tan-faint disabled:opacity-40"
@@ -103,7 +139,7 @@ export function NeedleInventoryPanel() {
             </button>
             <button
               type="button"
-              aria-label={t("needle.increment")}
+              aria-label={t("syringe.increment")}
               onClick={() => adjust(1)}
               className="flex size-10 items-center justify-center rounded-full border border-line text-ink transition-colors hover:border-tan-soft hover:bg-tan-faint"
             >
@@ -112,9 +148,9 @@ export function NeedleInventoryPanel() {
           </div>
         </div>
 
-        {prefs.note && (
+        {inv.note && (
           <p className="mt-3 rounded-lg bg-tan-faint border border-tan-soft px-3 py-2 text-sm text-ink-soft">
-            {prefs.note}
+            {inv.note}
           </p>
         )}
 
@@ -122,26 +158,25 @@ export function NeedleInventoryPanel() {
           <p className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-terracotta">
             <TriangleAlert className="size-4 shrink-0" />
             {empty
-              ? t("needle.outOfStock")
-              : t("needle.lowStock", { count: prefs.count })}
+              ? t("syringe.outOfStock")
+              : t("syringe.lowStock", { count: inv.count })}
           </p>
         )}
 
-        {prefs.reminderEnabled && (
+        {inv.reminder_enabled && (
           <p className="mt-2 inline-flex items-center gap-1.5 text-xs text-muted">
             <Bell className="size-3 shrink-0" />
-            {t("needle.reminderOn", { threshold: prefs.threshold })}
+            {t("syringe.reminderOn", { threshold: inv.low_stock_threshold })}
           </p>
         )}
       </CardBody>
 
-      <NeedleEditDialog
+      <SyringeEditDialog
         open={editOpen}
-        prefs={prefs}
+        inv={inv}
         onClose={() => setEditOpen(false)}
         onSave={(next) => {
-          // Re-enabling / adjusting the reminder should be able to fire again.
-          update({ ...next, lastPromptedDate: null });
+          void persist(next);
           setEditOpen(false);
         }}
       />
@@ -149,43 +184,44 @@ export function NeedleInventoryPanel() {
   );
 }
 
-function NeedleEditDialog({
+function SyringeEditDialog({
   open,
-  prefs,
+  inv,
   onClose,
   onSave,
 }: {
   open: boolean;
-  prefs: NeedlePreferences;
+  inv: SyringeInventoryInput;
   onClose: () => void;
-  onSave: (next: NeedlePreferences) => void;
+  onSave: (next: SyringeInventoryInput) => void;
 }) {
   const { t } = useI18n();
+
   // A saved non-preset, non-empty type is edited through the "Other…" option.
   const toSelectValue = (type: string) =>
-    type === "" || NEEDLE_TYPES.includes(type) ? type : "__custom__";
+    type === "" || SYRINGE_TYPES.includes(type) ? type : "__custom__";
 
-  const [count, setCount] = useState(String(prefs.count));
-  const [needleType, setNeedleType] = useState(toSelectValue(prefs.needleType));
+  const [count, setCount] = useState(String(inv.count));
+  const [syringeType, setSyringeType] = useState(toSelectValue(inv.syringe_type));
   const [customType, setCustomType] = useState(
-    toSelectValue(prefs.needleType) === "__custom__" ? prefs.needleType : ""
+    toSelectValue(inv.syringe_type) === "__custom__" ? inv.syringe_type : ""
   );
-  const [note, setNote] = useState(prefs.note);
-  const [reminderEnabled, setReminderEnabled] = useState(prefs.reminderEnabled);
-  const [threshold, setThreshold] = useState(String(prefs.threshold));
+  const [note, setNote] = useState(inv.note);
+  const [reminderEnabled, setReminderEnabled] = useState(inv.reminder_enabled);
+  const [threshold, setThreshold] = useState(String(inv.low_stock_threshold));
 
-  // Reset the form to the latest prefs each time the dialog opens.
+  // Reset the form to the latest values each time the dialog opens.
   useEffect(() => {
     if (!open) return;
-    setCount(String(prefs.count));
-    setNeedleType(toSelectValue(prefs.needleType));
+    setCount(String(inv.count));
+    setSyringeType(toSelectValue(inv.syringe_type));
     setCustomType(
-      toSelectValue(prefs.needleType) === "__custom__" ? prefs.needleType : ""
+      toSelectValue(inv.syringe_type) === "__custom__" ? inv.syringe_type : ""
     );
-    setNote(prefs.note);
-    setReminderEnabled(prefs.reminderEnabled);
-    setThreshold(String(prefs.threshold));
-  }, [open, prefs]);
+    setNote(inv.note);
+    setReminderEnabled(inv.reminder_enabled);
+    setThreshold(String(inv.low_stock_threshold));
+  }, [open, inv]);
 
   const submit = () => {
     const parsedCount = Math.max(0, Math.floor(Number(count) || 0));
@@ -193,22 +229,22 @@ function NeedleEditDialog({
       100,
       Math.max(1, Math.floor(Number(threshold) || 1))
     );
-    const resolvedType = needleType === "__custom__" ? customType.trim() : needleType;
+    const resolvedType =
+      syringeType === "__custom__" ? customType.trim() : syringeType;
     onSave({
-      ...prefs,
       count: parsedCount,
-      needleType: resolvedType,
+      syringe_type: resolvedType,
       note: note.trim(),
-      reminderEnabled,
-      threshold: parsedThreshold,
+      reminder_enabled: reminderEnabled,
+      low_stock_threshold: parsedThreshold,
     });
   };
 
   return (
-    <Dialog open={open} onClose={onClose} title={t("needle.editTitle")}>
+    <Dialog open={open} onClose={onClose} title={t("syringe.editTitle")}>
       <div className="space-y-4">
         <Input
-          label={t("needle.countLabel")}
+          label={t("syringe.countLabel")}
           type="number"
           min={0}
           inputMode="numeric"
@@ -217,33 +253,33 @@ function NeedleEditDialog({
         />
 
         <Select
-          label={t("needle.typeSelect")}
-          value={needleType}
-          onChange={(e) => setNeedleType(e.target.value)}
+          label={t("syringe.typeSelect")}
+          value={syringeType}
+          onChange={(e) => setSyringeType(e.target.value)}
         >
-          <option value="">{t("needle.noneOption")}</option>
-          {NEEDLE_TYPES.map((tp) => (
+          <option value="">{t("syringe.noneOption")}</option>
+          {SYRINGE_TYPES.map((tp) => (
             <option key={tp} value={tp}>
               {tp}
             </option>
           ))}
-          <option value="__custom__">{t("needle.customOption")}</option>
+          <option value="__custom__">{t("syringe.customOption")}</option>
         </Select>
 
-        {needleType === "__custom__" && (
+        {syringeType === "__custom__" && (
           <Input
-            label={t("needle.customLabel")}
+            label={t("syringe.customLabel")}
             value={customType}
             onChange={(e) => setCustomType(e.target.value)}
-            placeholder={t("needle.customPlaceholder")}
+            placeholder={t("syringe.customPlaceholder")}
           />
         )}
 
         <Textarea
-          label={t("needle.noteLabel")}
+          label={t("syringe.noteLabel")}
           value={note}
           onChange={(e) => setNote(e.target.value)}
-          placeholder={t("needle.notePlaceholder")}
+          placeholder={t("syringe.notePlaceholder")}
         />
 
         <label className="flex items-start gap-3 rounded-xl border border-line bg-surface px-3.5 py-3 cursor-pointer">
@@ -255,17 +291,17 @@ function NeedleEditDialog({
           />
           <span className="min-w-0">
             <span className="block text-sm font-medium text-ink">
-              {t("needle.reminderLabel")}
+              {t("syringe.reminderLabel")}
             </span>
             <span className="block text-xs text-muted">
-              {t("needle.reminderHint")}
+              {t("syringe.reminderHint")}
             </span>
           </span>
         </label>
 
         {reminderEnabled && (
           <Input
-            label={t("needle.thresholdLabel")}
+            label={t("syringe.thresholdLabel")}
             type="number"
             min={1}
             max={100}

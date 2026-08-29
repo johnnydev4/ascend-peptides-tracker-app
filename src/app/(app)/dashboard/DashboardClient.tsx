@@ -46,7 +46,7 @@ import { SideEffectDialog } from "@/components/features/SideEffectDialog";
 import { SideEffectCard } from "@/components/features/SideEffectCard";
 import { DoseCard } from "@/components/features/DoseCard";
 import { InjectionSiteMap } from "@/components/features/InjectionSiteMap";
-import { NeedleInventoryPanel } from "@/components/features/NeedleInventoryPanel";
+import { SyringeInventoryPanel } from "@/components/features/SyringeInventoryPanel";
 import { doseDrawUnits } from "@/lib/calculations/syringe";
 import { useI18n } from "@/lib/i18n/context";
 import { siteName } from "@/lib/i18n/labels";
@@ -331,8 +331,8 @@ export function DashboardClient({
           </CardBody>
         </Card>
 
-        {/* Needle stock */}
-        <NeedleInventoryPanel />
+        {/* Syringe stock */}
+        <SyringeInventoryPanel userId={userId} />
         </div>
 
         {/* Treatment progress */}

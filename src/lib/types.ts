@@ -165,3 +165,14 @@ export interface SiteUsageSummary {
   injectionCount: number;
   lastUsedAt: string | null;
 }
+
+export interface SyringeInventory {
+  user_id: string;
+  count: number;
+  syringe_type: string;
+  note: string;
+  low_stock_threshold: number;
+  reminder_enabled: boolean;
+  created_at: string;
+  updated_at: string;
+}

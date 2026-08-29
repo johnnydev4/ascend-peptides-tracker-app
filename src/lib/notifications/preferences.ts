@@ -163,71 +163,28 @@ export function saveVialExpiryPreferences(
   window.localStorage.setItem(VIAL_EXPIRY_KEY, JSON.stringify(prefs));
 }
 
-// --- Needle inventory -------------------------------------------------------
-// A simple device-local stock counter for the injection needles the user keeps
-// on hand: how many are left, which type they are, an optional note, and an
-// optional low-stock reminder (fires while the app is open, once a day, when the
-// count drops below the threshold).
+// --- Syringe low-stock reminder --------------------------------------------
+// The syringe inventory itself (count, type, note, threshold, reminder on/off)
+// lives in Supabase so it syncs across devices. Only the "when did THIS device
+// last show the low-stock warning" flag is device-local, so a single open
+// session doesn't fire the notification repeatedly.
 
-export interface NeedlePreferences {
-  /** How many needles are left. */
-  count: number;
-  /** Needle type / gauge, e.g. "31G". Free text. */
-  needleType: string;
-  /** Free note about the needles. */
-  note: string;
-  /** Whether to warn when running low. */
-  reminderEnabled: boolean;
-  /** Warn once the count is at or below this many. */
-  threshold: number;
-  /** ISO date (yyyy-MM-dd) we last showed the low-stock warning for. */
-  lastPromptedDate: string | null;
-}
+const SYRINGE_REMINDER_KEY = "peptide-tracker:syringe-reminder";
 
-const NEEDLE_KEY = "peptide-tracker:needle-inventory";
-
-export const DEFAULT_NEEDLE_PREFERENCES: NeedlePreferences = {
-  count: 0,
-  needleType: "",
-  note: "",
-  reminderEnabled: false,
-  threshold: 5,
-  lastPromptedDate: null,
-};
-
-export function getNeedlePreferences(): NeedlePreferences {
-  if (typeof window === "undefined") return DEFAULT_NEEDLE_PREFERENCES;
+/** ISO date (yyyy-MM-dd) this device last showed the low-stock warning for. */
+export function getSyringeReminderLastPrompted(): string | null {
+  if (typeof window === "undefined") return null;
   try {
-    const raw = window.localStorage.getItem(NEEDLE_KEY);
-    if (!raw) return DEFAULT_NEEDLE_PREFERENCES;
-    const parsed = JSON.parse(raw) as Partial<NeedlePreferences>;
-    return {
-      count:
-        typeof parsed.count === "number" && parsed.count >= 0
-          ? Math.floor(parsed.count)
-          : DEFAULT_NEEDLE_PREFERENCES.count,
-      needleType:
-        typeof parsed.needleType === "string"
-          ? parsed.needleType
-          : DEFAULT_NEEDLE_PREFERENCES.needleType,
-      note: typeof parsed.note === "string" ? parsed.note : "",
-      reminderEnabled: !!parsed.reminderEnabled,
-      threshold:
-        typeof parsed.threshold === "number" &&
-        parsed.threshold >= 1 &&
-        parsed.threshold <= 100
-          ? Math.floor(parsed.threshold)
-          : DEFAULT_NEEDLE_PREFERENCES.threshold,
-      lastPromptedDate:
-        typeof parsed.lastPromptedDate === "string"
-          ? parsed.lastPromptedDate
-          : null,
-    };
+    return window.localStorage.getItem(SYRINGE_REMINDER_KEY);
   } catch {
-    return DEFAULT_NEEDLE_PREFERENCES;
+    return null;
   }
 }
 
-export function saveNeedlePreferences(prefs: NeedlePreferences): void {
-  window.localStorage.setItem(NEEDLE_KEY, JSON.stringify(prefs));
+export function setSyringeReminderLastPrompted(date: string): void {
+  try {
+    window.localStorage.setItem(SYRINGE_REMINDER_KEY, date);
+  } catch {
+    // best-effort
+  }
 }
