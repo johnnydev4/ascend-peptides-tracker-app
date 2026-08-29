@@ -2,13 +2,15 @@
 
 import { use, useState } from "react";
 import { useRouter } from "next/navigation";
+import { format } from "date-fns";
 import { Pencil, Pause, Play, Trash2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useAsyncData } from "@/hooks/useAsyncData";
 import {
   getTreatment,
   updateTreatment,
-  setTreatmentStatus,
+  pauseTreatment,
+  resumeTreatment,
   deleteTreatment,
 } from "@/lib/data/treatments";
 import { listDoses } from "@/lib/data/doses";
@@ -38,6 +40,7 @@ import { Dialog } from "@/components/ui/Dialog";
 import { StatCard } from "@/components/ui/StatCard";
 import { TreatmentForm } from "@/components/features/TreatmentForm";
 import { DoseCard } from "@/components/features/DoseCard";
+import { DateField } from "@/components/ui/DateTimePicker";
 import { useI18n } from "@/lib/i18n/context";
 import { treatmentStatusLabel } from "@/lib/i18n/labels";
 
@@ -78,6 +81,7 @@ export default function TreatmentDetailPage({
   const { t } = useI18n();
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [pauseOpen, setPauseOpen] = useState(false);
 
   const { data, loading, refresh } = useAsyncData(async () => {
     const supabase = createClient();
@@ -125,13 +129,16 @@ export default function TreatmentDetailPage({
     await refresh();
   };
 
-  const togglePause = async () => {
+  const onPause = async (pausedUntil: string | null) => {
     const supabase = createClient();
-    await setTreatmentStatus(
-      supabase,
-      id,
-      treatment.status === "paused" ? "active" : "paused"
-    );
+    await pauseTreatment(supabase, id, pausedUntil);
+    setPauseOpen(false);
+    await refresh();
+  };
+
+  const onResume = async () => {
+    const supabase = createClient();
+    await resumeTreatment(supabase, id);
     await refresh();
   };
 
@@ -156,10 +163,27 @@ export default function TreatmentDetailPage({
             <Badge tone={statusTone(treatment.status)}>
               {treatmentStatusLabel(t, treatment.status)}
             </Badge>
+            {treatment.status === "paused" && (
+              <span className="text-xs text-muted">
+                {treatment.paused_until
+                  ? t("trd.pausedUntil", {
+                      date: formatFullDate(treatment.paused_until),
+                    })
+                  : t("trd.pausedIndef")}
+              </span>
+            )}
             <Button variant="secondary" size="sm" onClick={() => setEditOpen(true)}>
               <Pencil className="size-3.5" /> {t("common.edit")}
             </Button>
-            <Button variant="secondary" size="sm" onClick={togglePause}>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() =>
+                treatment.status === "paused"
+                  ? onResume()
+                  : setPauseOpen(true)
+              }
+            >
               {treatment.status === "paused" ? (
                 <>
                   <Play className="size-3.5" /> {t("trd.resume")}
@@ -300,6 +324,91 @@ export default function TreatmentDetailPage({
         confirmLabel={t("trd.deleteConfirm")}
         destructive
       />
+
+      <PauseDialog
+        open={pauseOpen}
+        onClose={() => setPauseOpen(false)}
+        onConfirm={onPause}
+        maxDate={treatment.end_date}
+      />
     </div>
+  );
+}
+
+/** Pause a treatment, optionally until a date (never past the treatment's end). */
+function PauseDialog({
+  open,
+  onClose,
+  onConfirm,
+  maxDate,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onConfirm: (pausedUntil: string | null) => Promise<void>;
+  maxDate: string | null;
+}) {
+  const { t } = useI18n();
+  const [until, setUntil] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const todayKey = format(new Date(), "yyyy-MM-dd");
+
+  const confirm = async () => {
+    setError(null);
+    if (until) {
+      if (until < todayKey) {
+        setError(t("trd.pausePast"));
+        return;
+      }
+      if (maxDate && until > maxDate) {
+        setError(t("trd.pauseTooLate", { date: formatFullDate(maxDate) }));
+        return;
+      }
+    }
+    setBusy(true);
+    try {
+      await onConfirm(until || null);
+      setUntil("");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t("common.somethingWrong"));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <Dialog
+      open={open}
+      onClose={onClose}
+      title={t("trd.pauseTitle")}
+      className="sm:max-w-md"
+    >
+      <div className="space-y-4">
+        <p className="text-sm text-muted leading-relaxed">
+          {t("trd.pauseDesc")}
+        </p>
+        <DateField
+          label={t("trd.pauseUntil")}
+          value={until}
+          onChange={setUntil}
+          hint={
+            maxDate
+              ? t("trd.pauseUntilHintMax", { date: formatFullDate(maxDate) })
+              : t("trd.pauseUntilHint")
+          }
+          error={error ?? undefined}
+        />
+        <div className="flex flex-wrap gap-3 justify-end pt-1">
+          <Button variant="secondary" onClick={onClose} disabled={busy}>
+            {t("common.cancel")}
+          </Button>
+          <Button onClick={confirm} loading={busy}>
+            <Pause className="size-3.5" />
+            {until ? t("trd.pauseUntilAction") : t("trd.pauseIndefinite")}
+          </Button>
+        </div>
+      </div>
+    </Dialog>
   );
 }

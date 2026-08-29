@@ -20,7 +20,7 @@ import { useAsyncData } from "@/hooks/useAsyncData";
 import { useUser } from "@/hooks/useUser";
 import { listDosesBetween } from "@/lib/data/doses";
 import { getSiteUsageSummaries } from "@/lib/data/injection-sites";
-import { listVialExpirations } from "@/lib/data/treatments";
+import { listVialExpirations, sweepExpiredPauses } from "@/lib/data/treatments";
 import type { DoseWithRelations, Treatment } from "@/lib/types";
 import { cn, daysUntil, formatDay, formatMonthYear, toDate } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/context";
@@ -63,6 +63,7 @@ const statusDot: Record<string, string> = {
   completed: "bg-sage",
   missed: "bg-terracotta",
   skipped: "bg-amber",
+  paused: "bg-ink",
 };
 
 export default function CalendarPage() {
@@ -78,6 +79,7 @@ export default function CalendarPage() {
 
   const { data, loading, refresh } = useAsyncData(async () => {
     const supabase = createClient();
+    await sweepExpiredPauses(supabase);
     const [doses, siteSummaries, vialExpirations] = await Promise.all([
       listDosesBetween(supabase, gridStart, gridEnd),
       getSiteUsageSummaries(supabase),
@@ -202,6 +204,7 @@ export default function CalendarPage() {
                     ["statusOpt.completed", "bg-sage"],
                     ["statusOpt.missed", "bg-terracotta"],
                     ["statusOpt.skipped", "bg-amber"],
+                    ["statusOpt.paused", "bg-ink"],
                   ].map(([labelKey, color]) => (
                     <span key={labelKey} className="flex items-center gap-1.5">
                       <span className={cn("size-2 rounded-full", color)} />

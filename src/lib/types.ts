@@ -1,6 +1,11 @@
 export type TreatmentFrequency = "daily" | "every_n_days" | "weekly_days";
 export type TreatmentStatus = "active" | "paused" | "completed" | "archived";
-export type DoseStatus = "scheduled" | "completed" | "missed" | "skipped";
+export type DoseStatus =
+  | "scheduled"
+  | "completed"
+  | "missed"
+  | "skipped"
+  | "paused";
 export type SideEffectSeverity = "mild" | "moderate" | "severe";
 
 export interface Profile {
@@ -34,6 +39,8 @@ export interface Treatment {
   syringe_type: string | null;
   reconstituted_at: string | null; // ISO date (yyyy-MM-dd)
   vial_expires_at: string | null; // ISO date (yyyy-MM-dd)
+  /** When paused, the date the pause lasts until (null = indefinite). */
+  paused_until: string | null; // ISO date (yyyy-MM-dd)
   created_at: string;
   updated_at: string;
 }

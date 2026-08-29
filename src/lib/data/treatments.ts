@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { endOfDay, format, startOfDay } from "date-fns";
 import { generateSchedule, computeEndDate } from "@/lib/calendar/generate";
 import type { Treatment } from "@/lib/types";
 import type { TreatmentInput } from "@/lib/validation/treatment";
@@ -150,6 +151,92 @@ export async function setTreatmentStatus(
     .update({ status })
     .eq("id", id);
   if (error) throw error;
+}
+
+/**
+ * Pauses a treatment, optionally until a date. Its upcoming scheduled doses
+ * (from today through the pause window's end, or all future doses when the pause
+ * is indefinite) are marked 'paused' so they show as paused — not missed — and
+ * are skipped rather than recovered.
+ */
+export async function pauseTreatment(
+  supabase: SupabaseClient,
+  id: string,
+  pausedUntil: string | null // yyyy-MM-dd, or null for indefinite
+) {
+  const { error } = await supabase
+    .from("treatments")
+    .update({ status: "paused", paused_until: pausedUntil })
+    .eq("id", id);
+  if (error) throw error;
+
+  let q = supabase
+    .from("doses")
+    .update({ status: "paused" })
+    .eq("treatment_id", id)
+    .eq("status", "scheduled")
+    .gte("scheduled_at", startOfDay(new Date()).toISOString());
+  if (pausedUntil) {
+    q = q.lte(
+      "scheduled_at",
+      endOfDay(new Date(`${pausedUntil}T00:00:00`)).toISOString()
+    );
+  }
+  const { error: doseError } = await q;
+  if (doseError) throw doseError;
+}
+
+/**
+ * Resumes a paused treatment. Future paused doses go back to 'scheduled';
+ * already-past paused doses stay paused (they were intentionally skipped).
+ */
+export async function resumeTreatment(supabase: SupabaseClient, id: string) {
+  const { error } = await supabase
+    .from("treatments")
+    .update({ status: "active", paused_until: null })
+    .eq("id", id);
+  if (error) throw error;
+
+  const { error: doseError } = await supabase
+    .from("doses")
+    .update({ status: "scheduled" })
+    .eq("treatment_id", id)
+    .eq("status", "paused")
+    .gte("scheduled_at", new Date().toISOString());
+  if (doseError) throw doseError;
+}
+
+/**
+ * Auto-resumes treatments whose pause end date has passed. Future paused doses
+ * become scheduled again; past ones stay paused. Best run alongside
+ * sweepMissedDoses when loading dose views.
+ */
+export async function sweepExpiredPauses(supabase: SupabaseClient) {
+  const todayKey = format(new Date(), "yyyy-MM-dd");
+  const { data: expired, error } = await supabase
+    .from("treatments")
+    .select("id")
+    .eq("status", "paused")
+    .not("paused_until", "is", null)
+    .lt("paused_until", todayKey);
+  if (error) throw error;
+
+  const ids = (expired ?? []).map((r) => r.id as string);
+  if (ids.length === 0) return;
+
+  const { error: tError } = await supabase
+    .from("treatments")
+    .update({ status: "active", paused_until: null })
+    .in("id", ids);
+  if (tError) throw tError;
+
+  const { error: doseError } = await supabase
+    .from("doses")
+    .update({ status: "scheduled" })
+    .in("treatment_id", ids)
+    .eq("status", "paused")
+    .gte("scheduled_at", new Date().toISOString());
+  if (doseError) throw doseError;
 }
 
 export async function deleteTreatment(supabase: SupabaseClient, id: string) {

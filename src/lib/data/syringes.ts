@@ -22,6 +22,23 @@ export async function getSyringeInventory(
   return (data as SyringeInventory | null) ?? null;
 }
 
+/**
+ * Removes one syringe from stock when a dose is recorded. No-ops if there's no
+ * inventory row yet or the count is already zero (never goes negative).
+ */
+export async function decrementSyringeStock(
+  supabase: SupabaseClient,
+  userId: string
+): Promise<void> {
+  const inv = await getSyringeInventory(supabase);
+  if (!inv || inv.count <= 0) return;
+  const { error } = await supabase
+    .from("syringe_inventory")
+    .update({ count: inv.count - 1 })
+    .eq("user_id", userId);
+  if (error) throw error;
+}
+
 /** Create or update the user's single inventory row. */
 export async function upsertSyringeInventory(
   supabase: SupabaseClient,

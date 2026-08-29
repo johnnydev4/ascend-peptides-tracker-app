@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Dose, DoseWithRelations, DoseStatus } from "@/lib/types";
+import { decrementSyringeStock } from "@/lib/data/syringes";
 
 const DOSE_SELECT =
   "*, treatment:treatments(id, name, dose_amount, dose_unit, vial_quantity, vial_unit, bac_water_ml, syringe_type), injection_site:injection_sites(id, name, body_region)";
@@ -80,6 +81,15 @@ export async function completeDose(
   doseId: string,
   params: CompleteDoseParams
 ) {
+  // Whether this dose was already completed decides if a syringe is used up:
+  // re-recording (editing) an already-completed dose must not decrement again.
+  const { data: prior } = await supabase
+    .from("doses")
+    .select("status")
+    .eq("id", doseId)
+    .maybeSingle();
+  const wasCompleted = prior?.status === "completed";
+
   const { error } = await supabase
     .from("doses")
     .update({
@@ -92,6 +102,16 @@ export async function completeDose(
     })
     .eq("id", doseId);
   if (error) throw error;
+
+  // A newly recorded dose uses one syringe from stock (best-effort; never blocks
+  // the dose from being recorded if the inventory update fails).
+  if (!wasCompleted) {
+    try {
+      await decrementSyringeStock(supabase, userId);
+    } catch {
+      // ignore — recording the dose is what matters
+    }
+  }
 
   // Re-recording an already-completed dose (an edit) would otherwise stack up
   // duplicate usage rows, so clear this dose's prior usage before re-inserting.

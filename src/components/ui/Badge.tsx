@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
-type Tone = "neutral" | "tan" | "sage" | "amber" | "terracotta";
+type Tone = "neutral" | "tan" | "sage" | "amber" | "terracotta" | "ink";
 
 const tones: Record<Tone, string> = {
   neutral: "bg-cream-deep text-ink-soft",
@@ -9,6 +9,7 @@ const tones: Record<Tone, string> = {
   sage: "bg-sage-soft text-sage",
   amber: "bg-amber-soft text-amber",
   terracotta: "bg-terracotta-soft text-terracotta",
+  ink: "bg-ink/10 text-ink",
 };
 
 export function Badge({
@@ -44,7 +45,7 @@ export function statusTone(status: string): Tone {
     case "active":
       return "sage";
     case "paused":
-      return "amber";
+      return "ink";
     case "severe":
       return "terracotta";
     case "moderate":
