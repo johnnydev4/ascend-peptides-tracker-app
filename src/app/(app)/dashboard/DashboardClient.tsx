@@ -46,6 +46,7 @@ import { SideEffectDialog } from "@/components/features/SideEffectDialog";
 import { SideEffectCard } from "@/components/features/SideEffectCard";
 import { DoseCard } from "@/components/features/DoseCard";
 import { InjectionSiteMap } from "@/components/features/InjectionSiteMap";
+import { NeedleInventoryPanel } from "@/components/features/NeedleInventoryPanel";
 import { doseDrawUnits } from "@/lib/calculations/syringe";
 import { useI18n } from "@/lib/i18n/context";
 import { siteName } from "@/lib/i18n/labels";
@@ -217,13 +218,16 @@ export function DashboardClient({
       </h1>
 
       <div className="grid gap-4 lg:grid-cols-3">
-        {/* Next dose */}
-        <Card className="flex flex-col lg:col-span-2">
+        {/* Next dose — single-row card, with the needle stock panel stacked
+            below it so the left column stays balanced against the taller cards
+            on the right instead of stretching the next-dose card with whitespace. */}
+        <div className="flex flex-col gap-4 lg:col-span-2">
+        <Card className="flex flex-col">
           <CardHeader title={t("dash.nextDose")} />
-          <CardBody className="flex flex-1 flex-col">
+          <CardBody>
             {displayDose ? (
               <>
-                <div className="my-auto flex flex-wrap items-center justify-between gap-4">
+                <div className="flex flex-wrap items-center justify-between gap-4">
                   <div>
                   <p className="text-2xl font-semibold tracking-tight text-ink">
                     {formatDateTime(displayDose.scheduled_at)}
@@ -326,6 +330,10 @@ export function DashboardClient({
             )}
           </CardBody>
         </Card>
+
+        {/* Needle stock */}
+        <NeedleInventoryPanel />
+        </div>
 
         {/* Treatment progress */}
         <Card>

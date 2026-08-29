@@ -7,6 +7,7 @@ import { Logo } from "@/components/layout/Logo";
 import { DoseReminderScheduler } from "@/components/pwa/DoseReminderScheduler";
 import { MeasurementReminderScheduler } from "@/components/pwa/MeasurementReminderScheduler";
 import { VialExpiryReminderScheduler } from "@/components/pwa/VialExpiryReminderScheduler";
+import { NeedleReminderScheduler } from "@/components/pwa/NeedleReminderScheduler";
 
 export default async function AppLayout({
   children,
@@ -54,6 +55,7 @@ export default async function AppLayout({
       <DoseReminderScheduler />
       <MeasurementReminderScheduler />
       <VialExpiryReminderScheduler />
+      <NeedleReminderScheduler />
     </div>
   );
 }
