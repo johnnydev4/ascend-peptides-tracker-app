@@ -9,6 +9,12 @@ const optionalPositive = z.coerce
   .optional()
   .or(z.literal("").transform(() => undefined));
 
+const optionalText = z
+  .string()
+  .max(120, "val.tooLong")
+  .optional()
+  .or(z.literal("").transform(() => undefined));
+
 export const measurementSchema = z.object({
   measuredAt: z.string().min(1, "val.chooseDate"),
   weight: optionalPositive,
@@ -32,6 +38,19 @@ export const measurementSchema = z.object({
   thighLeft: optionalPositive,
   thighRight: optionalPositive,
   notes: z.string().max(2000).optional(),
+  // Camera / technical info for the progress photos.
+  camera: optionalText,
+  lens: optionalText,
+  focalLength: optionalText,
+  subjectDistance: optionalText,
+  flash: z.enum(["yes", "no"]).optional().or(z.literal("").transform(() => undefined)),
+  flashPower: optionalText,
+  aperture: optionalText,
+  diaphragm: optionalText,
+  shutterSpeed: optionalText,
+  iso: optionalText,
+  whiteBalance: optionalText,
+  cameraElevation: optionalText,
 });
 
 export type MeasurementInput = z.output<typeof measurementSchema>;

@@ -144,6 +144,19 @@ export interface BodyMeasurement {
   thigh_right: number | null;
   notes: string | null;
   photos: string[]; // data URLs
+  // Camera / technical info for the progress photos (one setup per session).
+  camera: string | null;
+  lens: string | null;
+  focal_length: string | null;
+  subject_distance: string | null;
+  flash: "yes" | "no" | null;
+  flash_power: string | null;
+  aperture: string | null;
+  diaphragm: string | null;
+  shutter_speed: string | null;
+  iso: string | null;
+  white_balance: string | null;
+  camera_elevation: string | null;
   created_at: string;
   updated_at: string;
 }

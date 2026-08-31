@@ -1,6 +1,6 @@
 "use client";
 
-import { Pencil, Trash2 } from "lucide-react";
+import { Camera, Pencil, Trash2 } from "lucide-react";
 import type { BodyMeasurement } from "@/lib/types";
 import { formatFullDate, formatAmount } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/context";
@@ -20,6 +20,25 @@ export function MeasurementCard({
   const m = measurement;
   const wu = m.weight_unit;
   const lu = m.length_unit;
+
+  const cameraInfo: { label: string; value: string }[] = (
+    [
+      ["cameraBody", m.camera],
+      ["lens", m.lens],
+      ["focalLength", m.focal_length],
+      ["subjectDistance", m.subject_distance],
+      ["flash", m.flash ? t(`common.${m.flash}`) : null],
+      ["flashPower", m.flash_power],
+      ["aperture", m.aperture],
+      ["diaphragm", m.diaphragm],
+      ["shutterSpeed", m.shutter_speed],
+      ["iso", m.iso],
+      ["whiteBalance", m.white_balance],
+      ["cameraElevation", m.camera_elevation],
+    ] as const
+  )
+    .filter(([, value]) => value != null && value !== "")
+    .map(([key, value]) => ({ label: t(`trans.${key}`), value: value as string }));
 
   const chips: { label: string; value: string }[] = [];
   if (m.weight != null)
@@ -114,6 +133,25 @@ export function MeasurementCard({
             </button>
           ))}
         </div>
+      )}
+
+      {cameraInfo.length > 0 && (
+        <details className="mt-3 group">
+          <summary className="cursor-pointer list-none text-xs font-medium text-muted marker:content-none hover:text-ink transition-colors">
+            <span className="inline-flex items-center gap-1.5">
+              <Camera className="size-3.5" />
+              {t("trans.camera")}
+            </span>
+          </summary>
+          <dl className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs sm:grid-cols-3">
+            {cameraInfo.map((c) => (
+              <div key={c.label}>
+                <dt className="text-muted">{c.label}</dt>
+                <dd className="font-medium text-ink">{c.value}</dd>
+              </div>
+            ))}
+          </dl>
+        </details>
       )}
     </div>
   );

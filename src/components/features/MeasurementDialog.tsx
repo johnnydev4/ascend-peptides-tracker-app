@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
-import { ImagePlus, X } from "lucide-react";
+import { Camera, ImagePlus, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import {
   createMeasurement,
@@ -70,6 +70,18 @@ export function MeasurementDialog({
       thighLeft: num(measurement?.thigh_left),
       thighRight: num(measurement?.thigh_right),
       notes: measurement?.notes ?? "",
+      camera: measurement?.camera ?? "",
+      lens: measurement?.lens ?? "",
+      focalLength: measurement?.focal_length ?? "",
+      subjectDistance: measurement?.subject_distance ?? "",
+      flash: measurement?.flash ?? "",
+      flashPower: measurement?.flash_power ?? "",
+      aperture: measurement?.aperture ?? "",
+      diaphragm: measurement?.diaphragm ?? "",
+      shutterSpeed: measurement?.shutter_speed ?? "",
+      iso: measurement?.iso ?? "",
+      whiteBalance: measurement?.white_balance ?? "",
+      cameraElevation: measurement?.camera_elevation ?? "",
     },
   });
 
@@ -253,6 +265,57 @@ export function MeasurementDialog({
           <p className="mt-1.5 text-xs text-muted">
             {t("trans.photosHint", { max: MAX_PHOTOS })}
           </p>
+
+          <details className="mt-3 rounded-xl border border-line bg-tan-faint/40 px-3 py-2 group">
+            <summary className="cursor-pointer list-none text-[13px] font-medium text-ink-soft marker:content-none">
+              <span className="inline-flex items-center gap-1.5">
+                <Camera className="size-4 text-muted" />
+                {t("trans.camera")}
+              </span>
+            </summary>
+            <p className="mt-1 text-xs text-muted">{t("trans.cameraHint")}</p>
+            <div className="mt-3 grid grid-cols-2 gap-3">
+              <Input label={t("trans.cameraBody")} {...register("camera")} />
+              <Input label={t("trans.lens")} {...register("lens")} />
+              <Input
+                label={t("trans.focalLength")}
+                placeholder="50 mm"
+                {...register("focalLength")}
+              />
+              <Input
+                label={t("trans.subjectDistance")}
+                placeholder="1.5 m"
+                {...register("subjectDistance")}
+              />
+              <Select label={t("trans.flash")} {...register("flash")}>
+                <option value="">—</option>
+                <option value="yes">{t("common.yes")}</option>
+                <option value="no">{t("common.no")}</option>
+              </Select>
+              <Input label={t("trans.flashPower")} {...register("flashPower")} />
+              <Input
+                label={t("trans.aperture")}
+                placeholder="f/2.8"
+                {...register("aperture")}
+              />
+              <Input label={t("trans.diaphragm")} {...register("diaphragm")} />
+              <Input
+                label={t("trans.shutterSpeed")}
+                placeholder="1/125"
+                {...register("shutterSpeed")}
+              />
+              <Input label={t("trans.iso")} placeholder="100" {...register("iso")} />
+              <Input
+                label={t("trans.whiteBalance")}
+                placeholder="5600 K"
+                {...register("whiteBalance")}
+              />
+              <Input
+                label={t("trans.cameraElevation")}
+                {...register("cameraElevation")}
+              />
+            </div>
+          </details>
         </div>
 
         <Textarea

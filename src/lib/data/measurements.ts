@@ -45,6 +45,18 @@ function toRow(userId: string, input: MeasurementInput, photos: string[]) {
     thigh_right: input.thighRight ?? null,
     notes: input.notes || null,
     photos,
+    camera: input.camera ?? null,
+    lens: input.lens ?? null,
+    focal_length: input.focalLength ?? null,
+    subject_distance: input.subjectDistance ?? null,
+    flash: input.flash ?? null,
+    flash_power: input.flashPower ?? null,
+    aperture: input.aperture ?? null,
+    diaphragm: input.diaphragm ?? null,
+    shutter_speed: input.shutterSpeed ?? null,
+    iso: input.iso ?? null,
+    white_balance: input.whiteBalance ?? null,
+    camera_elevation: input.cameraElevation ?? null,
   };
 }
 
