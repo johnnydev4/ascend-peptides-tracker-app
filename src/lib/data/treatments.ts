@@ -154,10 +154,12 @@ export async function setTreatmentStatus(
 }
 
 /**
- * Pauses a treatment, optionally until a date. Its upcoming scheduled doses
- * (from today through the pause window's end, or all future doses when the pause
- * is indefinite) are marked 'paused' so they show as paused — not missed — and
- * are skipped rather than recovered.
+ * Pauses a treatment, optionally until a date. Its upcoming doses (from today
+ * through the pause window's end, or all future doses when the pause is
+ * indefinite) are marked 'paused' so they show as paused — not missed — and are
+ * skipped rather than recovered. Doses already swept to 'missed' within the
+ * window (e.g. today's dose the sweep flagged before the user paused) are
+ * pulled into the pause too, so nothing lingers as "omitida" once paused.
  */
 export async function pauseTreatment(
   supabase: SupabaseClient,
@@ -174,7 +176,7 @@ export async function pauseTreatment(
     .from("doses")
     .update({ status: "paused" })
     .eq("treatment_id", id)
-    .eq("status", "scheduled")
+    .in("status", ["scheduled", "missed"])
     .gte("scheduled_at", startOfDay(new Date()).toISOString());
   if (pausedUntil) {
     q = q.lte(

@@ -24,14 +24,18 @@ export function DoseCard({
   const unit = dose.dose_unit ?? dose.treatment?.dose_unit ?? "";
   const completable = isDoseCompletable(dose.scheduled_at);
   // A dose can be recorded once its day has arrived — this includes past
-  // "missed" or "skipped" doses the user forgot to complete on the day.
-  const canComplete = dose.status !== "completed" && completable;
+  // "missed" or "skipped" doses the user forgot to complete on the day. Paused
+  // doses are intentionally skipped, so they can't be completed while paused.
+  const paused = dose.status === "paused";
+  const canComplete =
+    dose.status !== "completed" && !paused && completable;
   const draw = doseDrawUnits(dose.treatment, amount, unit);
 
   return (
     <div
       className={cn(
         "flex items-center gap-4 rounded-2xl border border-line bg-surface px-4 py-3.5",
+        paused && "opacity-60",
         className
       )}
     >
