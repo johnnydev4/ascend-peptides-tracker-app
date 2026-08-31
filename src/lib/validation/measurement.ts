@@ -46,7 +46,6 @@ export const measurementSchema = z.object({
   flash: z.enum(["yes", "no"]).optional().or(z.literal("").transform(() => undefined)),
   flashPower: optionalText,
   aperture: optionalText,
-  diaphragm: optionalText,
   shutterSpeed: optionalText,
   iso: optionalText,
   whiteBalance: optionalText,

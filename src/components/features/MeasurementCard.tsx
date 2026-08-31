@@ -30,7 +30,6 @@ export function MeasurementCard({
       ["flash", m.flash ? t(`common.${m.flash}`) : null],
       ["flashPower", m.flash_power],
       ["aperture", m.aperture],
-      ["diaphragm", m.diaphragm],
       ["shutterSpeed", m.shutter_speed],
       ["iso", m.iso],
       ["whiteBalance", m.white_balance],

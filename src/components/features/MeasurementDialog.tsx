@@ -77,7 +77,6 @@ export function MeasurementDialog({
       flash: measurement?.flash ?? "",
       flashPower: measurement?.flash_power ?? "",
       aperture: measurement?.aperture ?? "",
-      diaphragm: measurement?.diaphragm ?? "",
       shutterSpeed: measurement?.shutter_speed ?? "",
       iso: measurement?.iso ?? "",
       whiteBalance: measurement?.white_balance ?? "",
@@ -298,7 +297,6 @@ export function MeasurementDialog({
                 placeholder="f/2.8"
                 {...register("aperture")}
               />
-              <Input label={t("trans.diaphragm")} {...register("diaphragm")} />
               <Input
                 label={t("trans.shutterSpeed")}
                 placeholder="1/125"

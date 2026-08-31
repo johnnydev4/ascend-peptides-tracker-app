@@ -12,7 +12,6 @@ alter table public.body_measurements
   add column if not exists flash            text check (flash is null or flash in ('yes', 'no')),
   add column if not exists flash_power      text,
   add column if not exists aperture         text,
-  add column if not exists diaphragm        text,
   add column if not exists shutter_speed    text,
   add column if not exists iso              text,
   add column if not exists white_balance    text,

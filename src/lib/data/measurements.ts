@@ -52,7 +52,6 @@ function toRow(userId: string, input: MeasurementInput, photos: string[]) {
     flash: input.flash ?? null,
     flash_power: input.flashPower ?? null,
     aperture: input.aperture ?? null,
-    diaphragm: input.diaphragm ?? null,
     shutter_speed: input.shutterSpeed ?? null,
     iso: input.iso ?? null,
     white_balance: input.whiteBalance ?? null,

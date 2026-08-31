@@ -152,7 +152,6 @@ export interface BodyMeasurement {
   flash: "yes" | "no" | null;
   flash_power: string | null;
   aperture: string | null;
-  diaphragm: string | null;
   shutter_speed: string | null;
   iso: string | null;
   white_balance: string | null;
