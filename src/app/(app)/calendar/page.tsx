@@ -63,7 +63,7 @@ const statusDot: Record<string, string> = {
   completed: "bg-sage",
   missed: "bg-terracotta",
   skipped: "bg-amber",
-  paused: "bg-ink",
+  paused: "border border-ink bg-transparent",
 };
 
 export default function CalendarPage() {
@@ -204,7 +204,7 @@ export default function CalendarPage() {
                     ["statusOpt.completed", "bg-sage"],
                     ["statusOpt.missed", "bg-terracotta"],
                     ["statusOpt.skipped", "bg-amber"],
-                    ["statusOpt.paused", "bg-ink"],
+                    ["statusOpt.paused", "border border-ink bg-transparent"],
                   ].map(([labelKey, color]) => (
                     <span key={labelKey} className="flex items-center gap-1.5">
                       <span className={cn("size-2 rounded-full", color)} />
