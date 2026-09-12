@@ -83,3 +83,46 @@ export const treatmentSchema = z
 
 export type TreatmentInput = z.output<typeof treatmentSchema>;
 export type TreatmentFormValues = z.input<typeof treatmentSchema>;
+
+/**
+ * Data captured when a vial is re-mixed for an existing treatment. Mirrors the
+ * reconstitution fields of a treatment; the schedule/dose is left untouched.
+ */
+export const reconstituteSchema = z
+  .object({
+    vialQuantity: z.coerce
+      .number({ error: "val.number" })
+      .positive("val.positive")
+      .optional()
+      .or(z.literal("").transform(() => undefined)),
+    vialUnit: z.enum(VIAL_UNITS),
+    bacWaterMl: z.coerce
+      .number({ error: "val.number" })
+      .positive("val.positive")
+      .max(1000, "val.tooLarge")
+      .optional()
+      .or(z.literal("").transform(() => undefined)),
+    syringeType: z
+      .enum(SYRINGE_TYPES)
+      .optional()
+      .or(z.literal("").transform(() => undefined)),
+    reconstitutedAt: z.string().min(1, "val.chooseDate"),
+    vialExpiresAt: z.string().optional().or(z.literal("")),
+    note: z.string().max(500).optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (
+      data.reconstitutedAt &&
+      data.vialExpiresAt &&
+      data.vialExpiresAt < data.reconstitutedAt
+    ) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["vialExpiresAt"],
+        message: "val.expiryBeforeRecon",
+      });
+    }
+  });
+
+export type ReconstituteInput = z.output<typeof reconstituteSchema>;
+export type ReconstituteFormValues = z.input<typeof reconstituteSchema>;

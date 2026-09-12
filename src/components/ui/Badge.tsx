@@ -46,6 +46,8 @@ export function statusTone(status: string): Tone {
       return "sage";
     case "paused":
       return "ink";
+    case "expired":
+      return "terracotta";
     case "severe":
       return "terracotta";
     case "moderate":

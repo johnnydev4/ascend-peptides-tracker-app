@@ -3,7 +3,7 @@
 import { use, useState } from "react";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
-import { Pencil, Pause, Play, Trash2 } from "lucide-react";
+import { Pencil, Pause, Play, Trash2, FlaskConical } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useAsyncData } from "@/hooks/useAsyncData";
 import {
@@ -12,9 +12,17 @@ import {
   pauseTreatment,
   resumeTreatment,
   deleteTreatment,
+  sweepExpiredVials,
 } from "@/lib/data/treatments";
+import {
+  listReconstitutions,
+  reconstituteTreatment,
+} from "@/lib/data/reconstitutions";
 import { listDoses } from "@/lib/data/doses";
-import type { TreatmentInput } from "@/lib/validation/treatment";
+import type {
+  TreatmentInput,
+  ReconstituteInput,
+} from "@/lib/validation/treatment";
 import {
   concentrationOf,
   doseInSyringeUnits,
@@ -39,6 +47,7 @@ import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { Dialog } from "@/components/ui/Dialog";
 import { StatCard } from "@/components/ui/StatCard";
 import { TreatmentForm } from "@/components/features/TreatmentForm";
+import { ReconstituteDialog } from "@/components/features/ReconstituteDialog";
 import { DoseCard } from "@/components/features/DoseCard";
 import { DateField } from "@/components/ui/DateTimePicker";
 import { useI18n } from "@/lib/i18n/context";
@@ -82,19 +91,22 @@ export default function TreatmentDetailPage({
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [pauseOpen, setPauseOpen] = useState(false);
+  const [reconOpen, setReconOpen] = useState(false);
 
   const { data, loading, refresh } = useAsyncData(async () => {
     const supabase = createClient();
-    const [treatment, doses] = await Promise.all([
+    await sweepExpiredVials(supabase);
+    const [treatment, doses, reconstitutions] = await Promise.all([
       getTreatment(supabase, id),
       listDoses(supabase, { treatmentId: id }),
+      listReconstitutions(supabase, id),
     ]);
-    return { treatment, doses };
+    return { treatment, doses, reconstitutions };
   }, [id]);
 
   if (loading || !data) return <Spinner />;
 
-  const { treatment, doses } = data;
+  const { treatment, doses, reconstitutions } = data;
   const concentration = concentrationOf(
     treatment.vial_quantity ?? 0,
     treatment.vial_unit,
@@ -126,6 +138,17 @@ export default function TreatmentDetailPage({
     if (!user) throw new Error("Not signed in.");
     await updateTreatment(supabase, user.id, id, values);
     setEditOpen(false);
+    await refresh();
+  };
+
+  const onReconstitute = async (values: ReconstituteInput) => {
+    const supabase = createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) throw new Error("Not signed in.");
+    await reconstituteTreatment(supabase, user.id, id, values);
+    setReconOpen(false);
     await refresh();
   };
 
@@ -178,6 +201,13 @@ export default function TreatmentDetailPage({
             <Button
               variant="secondary"
               size="sm"
+              onClick={() => setReconOpen(true)}
+            >
+              <FlaskConical className="size-3.5" /> {t("recon.reconstitute")}
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
               onClick={() =>
                 treatment.status === "paused"
                   ? onResume()
@@ -205,6 +235,22 @@ export default function TreatmentDetailPage({
           </div>
         }
       />
+
+      {treatment.status === "expired" && (
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-terracotta-soft bg-terracotta-soft/50 px-4 py-3">
+          <p className="flex items-start gap-2 text-sm text-terracotta">
+            <FlaskConical className="mt-0.5 size-4 shrink-0" />
+            {treatment.vial_expires_at
+              ? t("recon.expiredNotice", {
+                  date: formatFullDate(treatment.vial_expires_at),
+                })
+              : t("recon.reconstituteHint")}
+          </p>
+          <Button size="sm" onClick={() => setReconOpen(true)}>
+            <FlaskConical className="size-3.5" /> {t("recon.reconstitute")}
+          </Button>
+        </div>
+      )}
 
       <div className="grid gap-4 sm:grid-cols-3 mb-4">
         <StatCard
@@ -276,6 +322,63 @@ export default function TreatmentDetailPage({
         </Card>
       )}
 
+      {reconstitutions.length > 0 && (
+        <Card className="mb-4">
+          <CardHeader title={t("recon.historyTitle")} />
+          <CardBody className="space-y-2.5">
+            {reconstitutions.map((r) => {
+              const conc = concentrationOf(
+                r.vial_quantity ?? 0,
+                r.vial_unit,
+                r.bac_water_ml ?? 0
+              );
+              return (
+                <div
+                  key={r.id}
+                  className="rounded-xl border border-line bg-surface px-3.5 py-3"
+                >
+                  <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+                    <p className="text-sm font-medium text-ink">
+                      {r.reconstituted_at
+                        ? formatFullDate(r.reconstituted_at)
+                        : formatFullDate(r.created_at)}
+                    </p>
+                    <p className="text-xs text-muted">
+                      {r.vial_quantity !== null &&
+                        `${formatAmount(r.vial_quantity)} ${r.vial_unit}`}
+                      {r.bac_water_ml !== null &&
+                        ` · ${formatAmount(r.bac_water_ml)} mL`}
+                      {r.syringe_type && ` · ${r.syringe_type}`}
+                    </p>
+                  </div>
+                  <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-muted">
+                    {conc && (
+                      <span>
+                        {t("recon.historyConcentration", {
+                          value: formatAmount(roundVolume(conc)),
+                        })}
+                      </span>
+                    )}
+                    {r.vial_expires_at && (
+                      <span>
+                        {t("recon.historyExpires", {
+                          date: formatFullDate(r.vial_expires_at),
+                        })}
+                      </span>
+                    )}
+                  </div>
+                  {r.note && (
+                    <p className="mt-1.5 text-xs text-ink-soft whitespace-pre-wrap">
+                      {r.note}
+                    </p>
+                  )}
+                </div>
+              );
+            })}
+          </CardBody>
+        </Card>
+      )}
+
       {treatment.notes && (
         <Card className="mb-4">
           <CardHeader title={t("trd.notes")} />
@@ -330,6 +433,13 @@ export default function TreatmentDetailPage({
         onClose={() => setPauseOpen(false)}
         onConfirm={onPause}
         maxDate={treatment.end_date}
+      />
+
+      <ReconstituteDialog
+        open={reconOpen}
+        onClose={() => setReconOpen(false)}
+        onConfirm={onReconstitute}
+        treatment={treatment}
       />
     </div>
   );

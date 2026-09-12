@@ -241,6 +241,24 @@ export async function sweepExpiredPauses(supabase: SupabaseClient) {
   if (doseError) throw doseError;
 }
 
+/**
+ * Marks active treatments whose vial expiry date has passed as 'expired', so
+ * the user is prompted to reconstitute a fresh vial before recording more
+ * doses. Reconstituting (see reconstituteTreatment) flips it back to 'active'.
+ * Best run alongside sweepMissedDoses / sweepExpiredPauses when loading views.
+ * Paused treatments are left alone so the pause state machine stays authoritative.
+ */
+export async function sweepExpiredVials(supabase: SupabaseClient) {
+  const todayKey = format(new Date(), "yyyy-MM-dd");
+  const { error } = await supabase
+    .from("treatments")
+    .update({ status: "expired" })
+    .eq("status", "active")
+    .not("vial_expires_at", "is", null)
+    .lt("vial_expires_at", todayKey);
+  if (error) throw error;
+}
+
 export async function deleteTreatment(supabase: SupabaseClient, id: string) {
   const { error } = await supabase.from("treatments").delete().eq("id", id);
   if (error) throw error;

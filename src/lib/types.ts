@@ -1,5 +1,10 @@
 export type TreatmentFrequency = "daily" | "every_n_days" | "weekly_days";
-export type TreatmentStatus = "active" | "paused" | "completed" | "archived";
+export type TreatmentStatus =
+  | "active"
+  | "paused"
+  | "completed"
+  | "archived"
+  | "expired";
 export type DoseStatus =
   | "scheduled"
   | "completed"
@@ -43,6 +48,21 @@ export interface Treatment {
   paused_until: string | null; // ISO date (yyyy-MM-dd)
   created_at: string;
   updated_at: string;
+}
+
+/** One recorded re-mix of a treatment's vial (the audit trail). */
+export interface TreatmentReconstitution {
+  id: string;
+  treatment_id: string;
+  user_id: string;
+  vial_quantity: number | null;
+  vial_unit: string;
+  bac_water_ml: number | null;
+  syringe_type: string | null;
+  reconstituted_at: string | null; // ISO date (yyyy-MM-dd)
+  vial_expires_at: string | null; // ISO date (yyyy-MM-dd)
+  note: string | null;
+  created_at: string;
 }
 
 export interface Dose {

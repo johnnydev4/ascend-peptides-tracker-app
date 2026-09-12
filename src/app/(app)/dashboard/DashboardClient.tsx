@@ -15,7 +15,11 @@ import {
 import { differenceInCalendarWeeks, isSameDay } from "date-fns";
 import { createClient } from "@/lib/supabase/client";
 import { useAsyncData } from "@/hooks/useAsyncData";
-import { listTreatments, sweepExpiredPauses } from "@/lib/data/treatments";
+import {
+  listTreatments,
+  sweepExpiredPauses,
+  sweepExpiredVials,
+} from "@/lib/data/treatments";
 import {
   getNextScheduledDose,
   listDoses,
@@ -80,6 +84,7 @@ export function DashboardClient({
     await Promise.all([
       ensureDefaultSites(supabase, userId),
       sweepExpiredPauses(supabase),
+      sweepExpiredVials(supabase),
     ]);
     // Sweep missed doses only after expired pauses have been resolved, so a
     // just-resumed treatment's newly-scheduled past doses are handled correctly.

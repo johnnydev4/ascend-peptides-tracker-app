@@ -51,6 +51,7 @@ const en: Dict = {
   "status.active": "active",
   "status.paused": "paused",
   "status.archived": "archived",
+  "status.expired": "expired",
   "severity.mild": "mild",
   "severity.moderate": "moderate",
   "severity.severe": "severe",
@@ -469,6 +470,23 @@ const en: Dict = {
   "recon.concentration": "Concentration: {value} mg/mL",
   "recon.doseEquals": "Your dose of {dose} = {units} u on a {syringe} syringe",
   "recon.doseInUnits": "Dose in units",
+  "recon.reconstitute": "Reconstitute",
+  "recon.reconstituteTitle": "Reconstitute vial",
+  "recon.reconstituteHint":
+    "Enter the details of the new vial. This replaces the treatment's current vial figures and is saved to its reconstitution history. The dose schedule is unchanged.",
+  "recon.reconstituteAction": "Save reconstitution",
+  "recon.note": "Note",
+  "recon.calcToggle": "Reconstitution calculator",
+  "recon.calcHint":
+    "Work out the new vial here, then tap Use these values to fill the fields above.",
+  "recon.applyCalc": "Use these values",
+  "recon.applied": "Values applied ✓",
+  "recon.expiredNotice":
+    "This vial expired on {date}. Reconstitute a fresh vial to keep recording doses.",
+  "recon.historyTitle": "Reconstitution history",
+  "recon.historyEmpty": "No reconstitutions recorded yet.",
+  "recon.historyConcentration": "{value} mg/mL",
+  "recon.historyExpires": "expires {date}",
 
   // Vial expiry
   "vial.expiresLabel": "Vial expiry",
@@ -709,6 +727,7 @@ const es: Dict = {
   "status.active": "activo",
   "status.paused": "pausado",
   "status.archived": "archivado",
+  "status.expired": "vencido",
   "severity.mild": "leve",
   "severity.moderate": "moderado",
   "severity.severe": "grave",
@@ -1133,6 +1152,23 @@ const es: Dict = {
   "recon.concentration": "Concentración: {value} mg/mL",
   "recon.doseEquals": "Tu dosis de {dose} = {units} u en jeringa {syringe}",
   "recon.doseInUnits": "Dosis en unidades",
+  "recon.reconstitute": "Reconstituir",
+  "recon.reconstituteTitle": "Reconstituir vial",
+  "recon.reconstituteHint":
+    "Ingresa los datos del nuevo vial. Reemplaza los datos actuales del vial del tratamiento y se guarda en su historial de reconstituciones. El calendario de dosis no cambia.",
+  "recon.reconstituteAction": "Guardar reconstitución",
+  "recon.note": "Nota",
+  "recon.calcToggle": "Calculadora de reconstitución",
+  "recon.calcHint":
+    "Calcula aquí el nuevo vial y luego pulsa Usar estos valores para rellenar los campos de arriba.",
+  "recon.applyCalc": "Usar estos valores",
+  "recon.applied": "Valores aplicados ✓",
+  "recon.expiredNotice":
+    "Este vial venció el {date}. Reconstituye un vial nuevo para seguir registrando dosis.",
+  "recon.historyTitle": "Historial de reconstituciones",
+  "recon.historyEmpty": "Aún no hay reconstituciones registradas.",
+  "recon.historyConcentration": "{value} mg/mL",
+  "recon.historyExpires": "vence {date}",
 
   // Vencimiento del vial
   "vial.expiresLabel": "Vencimiento de vial",

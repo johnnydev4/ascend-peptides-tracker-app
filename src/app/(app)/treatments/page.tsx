@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Plus, Syringe } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useAsyncData } from "@/hooks/useAsyncData";
-import { listTreatments } from "@/lib/data/treatments";
+import { listTreatments, sweepExpiredVials } from "@/lib/data/treatments";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -22,6 +22,7 @@ export default function TreatmentsPage() {
   const { t } = useI18n();
   const { data, loading } = useAsyncData(async () => {
     const supabase = createClient();
+    await sweepExpiredVials(supabase);
     const [treatments, doseRows] = await Promise.all([
       listTreatments(supabase),
       supabase
