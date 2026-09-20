@@ -72,6 +72,7 @@ export default function InjectionSitesPage() {
         <Card>
           <CardHeader title={t("is.allAreas")} />
           <CardBody className="space-y-2">
+            <p className="text-xs text-muted pb-1">{t("is.omitHint")}</p>
             {data.length === 0 ? (
               <EmptyState icon={Target} title={t("is.noSites")} />
             ) : (
@@ -96,10 +97,12 @@ export default function InjectionSitesPage() {
                             })}
                       </p>
                     </div>
-                    {summary.site.enabled && (
+                    {summary.site.enabled ? (
                       <Badge tone={statusMeta[status].tone}>
                         {t(statusMeta[status].key)}
                       </Badge>
+                    ) : (
+                      <Badge tone="neutral">{t("is.omitted")}</Badge>
                     )}
                     <label className="flex items-center gap-2 text-xs text-muted cursor-pointer select-none">
                       <input
@@ -109,7 +112,7 @@ export default function InjectionSitesPage() {
                           toggle(summary.site.id, e.target.checked)
                         }
                         className="size-4 accent-[var(--color-ink)] cursor-pointer"
-                        aria-label={label}
+                        aria-label={t("is.omitToggle", { name: label })}
                       />
                       {t("is.available")}
                     </label>

@@ -356,6 +356,10 @@ const en: Dict = {
   "is.injections": "{n} injections",
   "is.injectionsLastUsed": "{n} injections · last used {day}",
   "is.available": "Available",
+  "is.omitted": "Omitted",
+  "is.omitToggle": "Include {name} in suggestions",
+  "is.omitHint":
+    "Uncheck any area to omit it — omitted areas won't appear in the suggested next zone.",
   "is.legendRecent": "Used recently",
   "is.legendUsed": "Used",
   "is.legendNotUsed": "Not used",
@@ -1037,6 +1041,10 @@ const es: Dict = {
   "is.injections": "{n} inyecciones",
   "is.injectionsLastUsed": "{n} inyecciones · usada por última vez {day}",
   "is.available": "Disponible",
+  "is.omitted": "Omitida",
+  "is.omitToggle": "Incluir {name} en las sugerencias",
+  "is.omitHint":
+    "Desmarca cualquier zona para omitirla — las zonas omitidas no aparecerán en la zona sugerida.",
   "is.legendRecent": "Usada recientemente",
   "is.legendUsed": "Usada",
   "is.legendNotUsed": "No usada",

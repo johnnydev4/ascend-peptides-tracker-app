@@ -285,43 +285,53 @@ export function DashboardClient({
                   </p>
                 )}
                 </div>
-                <div className="flex items-center justify-between gap-3 pt-6">
-                  <p className="inline-flex items-center gap-1.5 text-sm text-muted">
-                    <MapPin className="size-3.5 shrink-0 text-muted" />
-                    {lastSiteDose?.injection_site
-                      ? t("dash.lastSite", {
-                          name: siteName(t, lastSiteDose.injection_site),
-                        })
-                      : t("dash.noSiteYet")}
-                  </p>
-                  {dayDoses.length > 1 && (
-                    <div className="flex shrink-0 items-center gap-3">
-                      <button
-                        type="button"
-                        aria-label={t("common.prev")}
-                        onClick={() =>
-                          setDoseIndex(
-                            (i) => (i - 1 + dayDoses.length) % dayDoses.length
-                          )
-                        }
-                        className="flex size-8 items-center justify-center rounded-full border border-line text-muted transition-colors hover:border-tan-soft hover:text-ink"
-                      >
-                        <ChevronLeft className="size-4" />
-                      </button>
-                      <span className="text-xs font-medium tabular-nums text-muted">
-                        {(doseIndex % dayDoses.length) + 1} / {dayDoses.length}
-                      </span>
-                      <button
-                        type="button"
-                        aria-label={t("common.next")}
-                        onClick={() =>
-                          setDoseIndex((i) => (i + 1) % dayDoses.length)
-                        }
-                        className="flex size-8 items-center justify-center rounded-full border border-line text-muted transition-colors hover:border-tan-soft hover:text-ink"
-                      >
-                        <ChevronRight className="size-4" />
-                      </button>
-                    </div>
+                <div className="pt-6">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="inline-flex items-center gap-1.5 text-sm text-muted">
+                      <MapPin className="size-3.5 shrink-0 text-muted" />
+                      {lastSiteDose?.injection_site
+                        ? t("dash.lastSite", {
+                            name: siteName(t, lastSiteDose.injection_site),
+                          })
+                        : t("dash.noSiteYet")}
+                    </p>
+                    {dayDoses.length > 1 && (
+                      <div className="flex shrink-0 items-center gap-3">
+                        <button
+                          type="button"
+                          aria-label={t("common.prev")}
+                          onClick={() =>
+                            setDoseIndex(
+                              (i) => (i - 1 + dayDoses.length) % dayDoses.length
+                            )
+                          }
+                          className="flex size-8 items-center justify-center rounded-full border border-line text-muted transition-colors hover:border-tan-soft hover:text-ink"
+                        >
+                          <ChevronLeft className="size-4" />
+                        </button>
+                        <span className="text-xs font-medium tabular-nums text-muted">
+                          {(doseIndex % dayDoses.length) + 1} / {dayDoses.length}
+                        </span>
+                        <button
+                          type="button"
+                          aria-label={t("common.next")}
+                          onClick={() =>
+                            setDoseIndex((i) => (i + 1) % dayDoses.length)
+                          }
+                          className="flex size-8 items-center justify-center rounded-full border border-line text-muted transition-colors hover:border-tan-soft hover:text-ink"
+                        >
+                          <ChevronRight className="size-4" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                  {recommended && (
+                    <p className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-tan-faint border border-tan-soft px-2.5 py-1 text-sm font-medium text-ink-soft">
+                      <Sparkles className="size-3.5 text-muted" />
+                      {t("dash.nextSuggested", {
+                        name: siteName(t, recommended.site),
+                      })}
+                    </p>
                   )}
                 </div>
               </>
