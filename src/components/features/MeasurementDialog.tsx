@@ -23,7 +23,6 @@ import { Button } from "@/components/ui/Button";
 import { Input, Select, Textarea } from "@/components/ui/Field";
 import { DateField } from "@/components/ui/DateTimePicker";
 
-const MAX_PHOTOS = 10;
 
 export function MeasurementDialog({
   measurement,
@@ -88,12 +87,11 @@ export function MeasurementDialog({
     if (!files || files.length === 0) return;
     setProcessing(true);
     try {
-      const room = MAX_PHOTOS - photos.length;
-      const chosen = Array.from(files).slice(0, Math.max(0, room));
+      const chosen = Array.from(files);
       const encoded = await Promise.all(
         chosen.map((f) => fileToCompressedDataUrl(f))
       );
-      setPhotos((prev) => [...prev, ...encoded].slice(0, MAX_PHOTOS));
+      setPhotos((prev) => [...prev, ...encoded]);
     } catch {
       setServerError(t("common.somethingWrong"));
     } finally {
@@ -245,25 +243,20 @@ export function MeasurementDialog({
               ))}
             </div>
           )}
-          {photos.length < MAX_PHOTOS && (
-            <label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed border-line-strong bg-tan-faint/50 px-4 py-3 text-sm text-ink-soft hover:bg-tan-faint transition-colors">
-              <ImagePlus className="size-4 text-muted" />
-              {processing ? t("trans.processing") : t("trans.addPhotos")}
-              <input
-                type="file"
-                accept="image/*"
-                multiple
-                className="hidden"
-                onChange={(e) => {
-                  void onPickPhotos(e.target.files);
-                  e.target.value = "";
-                }}
-              />
-            </label>
-          )}
-          <p className="mt-1.5 text-xs text-muted">
-            {t("trans.photosHint", { max: MAX_PHOTOS })}
-          </p>
+          <label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed border-line-strong bg-tan-faint/50 px-4 py-3 text-sm text-ink-soft hover:bg-tan-faint transition-colors">
+            <ImagePlus className="size-4 text-muted" />
+            {processing ? t("trans.processing") : t("trans.addPhotos")}
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              className="hidden"
+              onChange={(e) => {
+                void onPickPhotos(e.target.files);
+                e.target.value = "";
+              }}
+            />
+          </label>
 
           <details className="mt-3 rounded-xl border border-line bg-tan-faint/40 px-3 py-2 group">
             <summary className="cursor-pointer list-none text-[13px] font-medium text-ink-soft marker:content-none">
